@@ -1,4 +1,4 @@
-package awesome.jpa;
+package awesome.persistence;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ManyToMany {
+public @interface OneToMany {
 	FetchType fetch() default FetchType.LAZY;
 	String mappedBy() default "";
 }

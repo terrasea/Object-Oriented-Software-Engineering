@@ -1,10 +1,10 @@
-package awesome.jpa.test;
+package awesome.persistence.test;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.jpa.ID;
+import awesome.persistence.ID;
 
 
 public class TestID {
@@ -30,7 +30,7 @@ public class TestID {
 	public void testDefaultName() throws SecurityException, NoSuchFieldException {
 		IDTest klass = new IDTest();
 		ID id = klass.getClass().getDeclaredField("id").getAnnotation(ID.class);
-		Assert.assertEquals("id", id.name());
+		Assert.assertEquals("", id.name());
 	}
 	
 	

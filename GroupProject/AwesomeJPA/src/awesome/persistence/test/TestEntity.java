@@ -1,15 +1,30 @@
-package awesome.jpa.test;
+package awesome.persistence.test;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.jpa.Entity;
+import awesome.persistence.Entity;
 
 public class TestEntity {
 	@Entity(name="Test")
 	class TestClass {
 		
+	}
+	
+	
+	@Entity
+	class TestClass2 {
+		
+	}
+	
+	
+	
+	@Test
+	public void testDefaultName() {
+		TestClass2 klass = new TestClass2();
+		Entity entity = klass.getClass().getAnnotation(Entity.class);
+		Assert.assertEquals("", entity.name());
 	}
 	
 	

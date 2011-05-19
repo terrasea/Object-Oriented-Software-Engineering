@@ -4,7 +4,6 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.persistence.Basic;
 import awesome.persistence.Column;
 
 

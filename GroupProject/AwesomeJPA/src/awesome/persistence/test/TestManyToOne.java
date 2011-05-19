@@ -7,7 +7,6 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import awesome.persistence.FetchType;
-import awesome.persistence.ManyToMany;
 import awesome.persistence.ManyToOne;
 
 

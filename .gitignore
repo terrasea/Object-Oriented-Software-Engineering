@@ -7,3 +7,9 @@ GroupProject/AwesomeJPA/.ecpproperties
 GroupProject/AwesomeJPA/.settings/
 GroupProject/ClassDiagram.dia~
 
+GroupProject/TransformTest/.classpath
+GroupProject/TransformTest/.project
+GroupProject/TransformTest/.settings/
+GroupProject/TransformTest/build
+lib/
+TransformTest.jar

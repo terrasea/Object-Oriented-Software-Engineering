@@ -11,12 +11,17 @@ public class Manager {
 		
 	}
 	
-	public void finishTransaction() {
+	public void commitTransaction() {
 		
 	}
 	
 	
 	public void rollBack() {
+		
+	}
+	
+	
+	protected void transformEntity(Entity entity) {
 		
 	}
 }

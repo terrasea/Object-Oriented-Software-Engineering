@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<project name="TransformTest">
+<project name="TransformTest" default="compile">
 	
+	<target name="compile">
+		<javac>
+			
+		</javac>
+	</target>
 </project>

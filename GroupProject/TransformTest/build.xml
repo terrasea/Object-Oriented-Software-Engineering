@@ -2,9 +2,45 @@
 
 <project name="TransformTest" default="compile">
 	
-	<target name="compile">
-		<javac>
-			
+	<property name="src.dir" value="src"/>
+	<property name="build.dir" value="build"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="jar.dir" value="jar"/>
+
+	<path id="project.class.path">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${jar.dir}"/>
+	</target>
+
+	<target name="compile" depends="init">
+		<javac destdir="${build.dir}" classpathref="project.class.path">
+			<src path="${src.dir}"/>
 		</javac>
+	</target>
+	
+	
+	<target name="jar" depends="compile">
+		<jar destfile="${jar.dir}/${ant.project.name}.jar">
+			<fileset dir="${build.dir}">
+				<include name="**/*.class"/>
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="main.Main"/>
+				<attribute name="Premain-Class" value="main.Main"/>
+				<attribute name="Boot-Class-Path" value="asm-4.0_RC1.jar"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	
+	<target name="clean">
+		<delete dir="${jar.dir}"/>
+		<delete dir="${build.dir}"/>
 	</target>
 </project>

@@ -70,6 +70,9 @@ public class AddTimerAdapter extends ClassAdapter {
 						"currentTimeMillis", "()J");
 				mv.visitInsn(Opcodes.LADD);
 				mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, "timer", "J");
+				if(!owner.equals("transform/InvockClass")) {
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, "transform/InvockClass", "print", "()V");
+				}
 			}
 			mv.visitInsn(opcode);
 		}

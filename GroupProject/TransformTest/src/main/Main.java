@@ -21,6 +21,9 @@ public class Main {
 		tempt.answer("Not on you life");
 	}
 	
+	
+	
+	
 	private void printHello(String msg) {
 		System.out.println(msg);
 	}
@@ -50,6 +53,7 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		StubClassLoader.getSystemClassLoader();
 		Main main = new Main();
 		main.printHello("Goodbye");
 		

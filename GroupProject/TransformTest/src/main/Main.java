@@ -17,6 +17,7 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 
 public class Main {
 	private static final String CLASS_PATH = System
@@ -107,8 +108,15 @@ public class Main {
 			System
 					.setProperty("java.system.class.loader",
 							"main.MyClassLoader");
-			VirtualMachine vm = VirtualMachine.attach(VirtualMachine.list()
-					.get(0));
+			VirtualMachineDescriptor vmDescriptor = null;
+			for(VirtualMachineDescriptor descr: VirtualMachine.list()) {
+				System.out.println("descriptor: " + descr.displayName());
+				if(descr.displayName().endsWith(INSTR_JAR_NAME) || descr.displayName().endsWith("Main")) {
+					vmDescriptor = descr;
+					break;
+				}
+			}
+			VirtualMachine vm = VirtualMachine.attach(vmDescriptor);
 			String splitter = OS_NAME.equalsIgnoreCase("Windows") ? ";" : ":";
 			String agentPath = null;
 			for (String entry : CLASS_PATH.split(splitter)) {

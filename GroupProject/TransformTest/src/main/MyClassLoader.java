@@ -33,7 +33,7 @@ public class MyClassLoader extends ClassLoader {
 	@Override
 	public Class<?> loadClass(String name, boolean resolve)
 			throws ClassNotFoundException {
-		if (!"main.MyClassLoader".equals(name) && name.startsWith("main")) {
+		if (!"main.MyClassLoader".equals(name) && name.startsWith("main") || name.startsWith("transform")) {
 			return getClass(name);
 
 		}

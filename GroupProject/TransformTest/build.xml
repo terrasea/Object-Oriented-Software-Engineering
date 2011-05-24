@@ -11,6 +11,7 @@
 		<fileset dir="${lib.dir}">
 			<include name="**/*.jar"/>
 		</fileset>
+		
 	</path>
 
 	<target name="init">
@@ -31,9 +32,13 @@
 				<include name="**/*.class"/>
 			</fileset>
 			<manifest>
+				<attribute name="Class-Path" value="asm-4.0_RC1.jar ${java.home}/../lib/tools.jar"/>
 				<attribute name="Main-Class" value="main.Main"/>
 				<attribute name="Premain-Class" value="main.Main"/>
-				<attribute name="Boot-Class-Path" value="asm-4.0_RC1.jar"/>
+				<attribute name="Agent-Class" value="main.Main"/>
+				<attribute name="Can-Redefine-Classes" value="true"/>
+				<attribute name="Can-Retransform-Classes" value="true"/>
+				<attribute name="Boot-Class-Path" value="asm-4.0_RC1.jar ${java.home}/../lib/tools.jar"/>
 			</manifest>
 		</jar>
 	</target>

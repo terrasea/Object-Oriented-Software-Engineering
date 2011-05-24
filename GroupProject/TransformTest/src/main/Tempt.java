@@ -13,6 +13,7 @@ public class Tempt {
 	
 	
 	public void answer(String answer) {
+		System.out.println("Tempt ClassLoader: " + Tempt.class.getClassLoader());
 		System.out.println(answer);
 	}
 }

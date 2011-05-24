@@ -24,20 +24,14 @@ public class Main {
 		tempt.answer("Not on you life");
 		printCL();
 	}
-<<<<<<< HEAD
 
-=======
 	
-	
-	
-	
->>>>>>> 02f2cdd0639137a1e8ad6b1efcb44b1de6343c46
 	private void printHello(String msg) {
 		System.out.println(msg);
 	}
 
 	public void printCL() {
-		System.out.println("Bar ClassLoader: " + Main.class.getClassLoader());
+		System.out.println("Main ClassLoader: " + Main.class.getClassLoader());
 	}
 
 	public static void premain(String agentArgs, Instrumentation inst) {
@@ -70,7 +64,6 @@ public class Main {
 	 * @throws IllegalArgumentException
 	 * @throws InstantiationException
 	 */
-<<<<<<< HEAD
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, NoSuchMethodException, IllegalArgumentException,
@@ -86,7 +79,7 @@ public class Main {
 			try {
 				MyClassLoader loader = (MyClassLoader) ClassLoader
 						.getSystemClassLoader();
-				loader.addFileToClasspath("TransformTest.jar");
+				//loader.addFileToClasspath("TransformTest.jar");
 
 				// MyClassLoader loader = new
 				// MyClassLoader(Main.class.getClassLoader());
@@ -103,23 +96,16 @@ public class Main {
 				// mainm.invoke(null, argsArray);
 				// } else {
 
-				Main main = new Main();
-				main.printHello("Goodbye");
+				
 			} catch (Exception exception) {
 				exception.printStackTrace();
 			}
+			
+			Main main = new Main();
+			main.printHello("Goodbye");
 		}
 
 		// System.out.println(main.test);
-=======
-	public static void main(String[] args) {
-		StubClassLoader.getSystemClassLoader();
-		Main main = new Main();
-		main.printHello("Goodbye");
-		
-		
-		//System.out.println(main.test);
->>>>>>> 02f2cdd0639137a1e8ad6b1efcb44b1de6343c46
 	}
 
 }

@@ -9,45 +9,51 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-public class MyClassLoader extends URLClassLoader {
+public class MyClassLoader extends ClassLoader {
 
 	public MyClassLoader(ClassLoader parent) {
-		super(new URL[0], parent);
+		super(parent);
 		System.out.println("MyClassLoader");
 	}
 
 	public MyClassLoader() {
-		super(new URL[0], MyClassLoader.class.getClassLoader());
+		super(MyClassLoader.class.getClassLoader());
 		System.out.println("MyClassLoader");
 	}
 
-	synchronized public void addFileToClasspath(String jarName)
-			throws MalformedURLException, ClassNotFoundException {
-		File filePath = new File(jarName);
-		URI uriPath = filePath.toURI();
-		URL urlPath = uriPath.toURL();
-
-		addURL(urlPath);
-	}
+	// synchronized public void addFileToClasspath(String jarName)
+	// throws MalformedURLException, ClassNotFoundException {
+	// File filePath = new File(jarName);
+	// URI uriPath = filePath.toURI();
+	// URL urlPath = uriPath.toURL();
+	//
+	// addURL(urlPath);
+	// }
 
 	@Override
 	public Class<?> loadClass(String name, boolean resolve)
 			throws ClassNotFoundException {
-		// if ("mp.MyProgramLauncher".equals(name)) {
-		return getClass(name);
-		// }
-		// return super.loadClass(name, resolve);
+		if (!"main.MyClassLoader".equals(name) && name.startsWith("main")) {
+			return getClass(name);
+
+		}
+		return super.loadClass(name, resolve);
 	}
 
 	private Class<?> getClass(String name) throws ClassNotFoundException {
 		String file = name.replace('.', '/') + ".class";
 		byte[] b = null;
 		try {
+			System.out.println("getClass " + name);
 			b = loadClassData(file);
+
 			Class<?> c = defineClass(name, b, 0, b.length);
+			System.out.println(c.getCanonicalName());
 			resolveClass(c);
+
 			return c;
 		} catch (IOException e) {
+			System.out.println("IOException");
 			e.printStackTrace();
 			return null;
 		}
@@ -61,11 +67,12 @@ public class MyClassLoader extends URLClassLoader {
 		DataInputStream in = new DataInputStream(stream);
 		in.readFully(buff);
 		in.close();
+		System.out.println(buff.length);
 		return buff;
 	}
 
-	@Override
-	public String toString() {
-		return "MyClassLoader";
-	}
+//	@Override
+//	public String toString() {
+//		return "MyClassLoader";
+//	}
 }

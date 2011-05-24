@@ -24,7 +24,14 @@ public class Main {
 		tempt.answer("Not on you life");
 		printCL();
 	}
+<<<<<<< HEAD
 
+=======
+	
+	
+	
+	
+>>>>>>> 02f2cdd0639137a1e8ad6b1efcb44b1de6343c46
 	private void printHello(String msg) {
 		System.out.println(msg);
 	}
@@ -63,6 +70,7 @@ public class Main {
 	 * @throws IllegalArgumentException
 	 * @throws InstantiationException
 	 */
+<<<<<<< HEAD
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws ClassNotFoundException,
 			SecurityException, NoSuchMethodException, IllegalArgumentException,
@@ -103,6 +111,15 @@ public class Main {
 		}
 
 		// System.out.println(main.test);
+=======
+	public static void main(String[] args) {
+		StubClassLoader.getSystemClassLoader();
+		Main main = new Main();
+		main.printHello("Goodbye");
+		
+		
+		//System.out.println(main.test);
+>>>>>>> 02f2cdd0639137a1e8ad6b1efcb44b1de6343c46
 	}
 
 }

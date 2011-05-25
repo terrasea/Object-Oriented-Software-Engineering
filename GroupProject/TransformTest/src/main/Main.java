@@ -7,6 +7,8 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -87,17 +89,6 @@ public class Main {
 
 	/**
 	 * @param args
-	 * @throws ClassNotFoundException
-	 * @throws NoSuchMethodException
-	 * @throws SecurityException
-	 * @throws InvocationTargetException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InstantiationException
-	 * @throws IOException
-	 * @throws AttachNotSupportedException
-	 * @throws AgentInitializationException
-	 * @throws AgentLoadException
 	 */
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
@@ -120,7 +111,7 @@ public class Main {
 			String splitter = OS_NAME.equalsIgnoreCase("Windows") ? ";" : ":";
 			String agentPath = null;
 			for (String entry : CLASS_PATH.split(splitter)) {
-				System.out.println(entry);
+				System.out.println("Entry: " + entry);
 				if (entry.endsWith(INSTR_JAR_NAME)) {
 					agentPath = entry;
 					break;
@@ -129,31 +120,15 @@ public class Main {
 			if (agentPath != null) {
 				System.out.println(agentPath);
 				vm.loadAgent(agentPath);
+				
 			}
+			for (Object key : System.getProperties().keySet()) {
+				System.out.print(key);
+				System.out.print(": ");
+				System.out.println(System.getProperty((String) key));
+			}
+				
 			vm.detach();
-			// try {
-			// MyClassLoader loader = (MyClassLoader)
-			// ClassLoader.getSystemClassLoader();
-			// // loader.addFileToClasspath("TransformTest.jar");
-
-			// MyClassLoader loader = new
-			// MyClassLoader(Main.class.getClassLoader());
-			// Class inst = loader.loadClass("main.Main");
-			// Constructor con = inst.getConstructor();
-			// con.newInstance();
-			// Method printCL = inst.getMethod("printCL", null);
-			// printCL.invoke(null, new Object[0]);
-			// Class mainArgType[] = { (new String[0]).getClass() };
-			//
-			// Method mainm = inst.getMethod("main", mainArgType);
-			// String[] args2 = {"One"};
-			// Object argsArray[] = {args2};
-			// mainm.invoke(null, argsArray);
-			// } else {
-
-			// } catch (Exception exception) {
-			// exception.printStackTrace();
-			// }
 
 			Main main = new Main();
 			main.printHello("Goodbye");

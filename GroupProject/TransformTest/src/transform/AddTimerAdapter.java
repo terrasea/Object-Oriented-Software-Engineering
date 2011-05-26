@@ -60,6 +60,16 @@ public class AddTimerAdapter extends ClassAdapter {
 					"currentTimeMillis", "()J");
 			mv.visitInsn(Opcodes.LSUB);
 			mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, "timer", "J");
+			if(owner.startsWith("main")) {
+				System.out.println("Owner: " + owner);
+				mv.visitFieldInsn(Opcodes.GETSTATIC,
+						"java/lang/System", "out", "Ljava/io/PrintStream;");
+				mv.visitLdcInsn("Invoked println");
+				mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
+						"java/io/PrintStream", "println", "(Ljava/lang/String;)V");
+
+			}
+			
 		}
 
 		@Override
@@ -70,8 +80,11 @@ public class AddTimerAdapter extends ClassAdapter {
 						"currentTimeMillis", "()J");
 				mv.visitInsn(Opcodes.LADD);
 				mv.visitFieldInsn(Opcodes.PUTSTATIC, owner, "timer", "J");
-				if(!owner.equals("transform/InvockClass")) {
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, "transform/InvockClass", "print", "()V");
+				
+				if(owner.startsWith("main")) {
+					System.out.println("Owner: " + owner);
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, "transform/InvockClass", "print", 
+							"()V");
 				}
 			}
 			mv.visitInsn(opcode);

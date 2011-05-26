@@ -5,18 +5,13 @@ import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.InvocationTargetException;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import transform.AddTimerAdapter;
 
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
@@ -31,10 +26,10 @@ public class Main {
 
 	Tempt tempt = new Tempt();
 
-	private static Instrumentation instrumentation = null;
+	
 
-	public Main() {
-		System.out.println(Main.class.getClassLoader());
+	public Main() throws Exception{
+		
 		printHello("Hello");
 
 		tempt.tempt();
@@ -51,41 +46,7 @@ public class Main {
 		System.out.println("Main ClassLoader: " + Main.class.getClassLoader());
 	}
 
-	public static void premain(String agentArgs, Instrumentation inst) {
-		System.out.println("premain");
-		inst.addTransformer(new ClassFileTransformer() {
-			public byte[] transform(ClassLoader l, String name, Class<?> c,
-					ProtectionDomain d, byte[] b)
-					throws IllegalClassFormatException {
-				ClassReader cr = new ClassReader(b);
-				ClassWriter cw = new ClassWriter(cr, 0);
-				// ClassVisitor cc = new CheckClassAdapter(cw);
-				// ClassVisitor tv =
-				// new TraceClassVisitor(cc, new PrintWriter(System.out));
-
-				AddTimerAdapter adapter = new AddTimerAdapter(cw);
-				cr.accept(adapter, 0);
-
-				return cw.toByteArray();
-			}
-		});
-	}
-
-	public static void agentmain(String agentArgs, Instrumentation inst) {
-		instrumentation = inst;
-		System.out.println("agent running");
-		premain(agentArgs, inst);
-	}
-
-	public static void redefineClasses(ClassDefinition... definitions)
-			throws Exception {
-		if (instrumentation == null) {
-			throw new RuntimeException(
-					"Agent has not been started. Do not have handle to instrumentation");
-		}
-
-		instrumentation.redefineClasses(definitions);
-	}
+	
 
 	/**
 	 * @param args
@@ -118,22 +79,19 @@ public class Main {
 				}
 			}
 			if (agentPath != null) {
-				System.out.println(agentPath);
+				System.out.println("agentPath: " + agentPath);
 				vm.loadAgent(agentPath);
 				
 			}
-			for (Object key : System.getProperties().keySet()) {
-				System.out.print(key);
-				System.out.print(": ");
-				System.out.println(System.getProperty((String) key));
-			}
 				
 			vm.detach();
+			System.out.println(Main.class.getClassLoader());
 
 			Main main = new Main();
 			main.printHello("Goodbye");
 		}
-
+		
+		
 		// System.out.println(main.test);
 	}
 }

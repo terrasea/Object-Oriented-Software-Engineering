@@ -1,8 +1,5 @@
 package main;
 
-import java.io.IOException;
-import java.net.URL;
-
 import org.objectweb.asm.ClassWriter;
 
 class StubClassLoader extends java.lang.ClassLoader {

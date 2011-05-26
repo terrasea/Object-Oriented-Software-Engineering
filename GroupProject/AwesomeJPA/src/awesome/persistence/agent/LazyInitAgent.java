@@ -4,8 +4,6 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
-import org.objectweb.asm.ClassReader;
-
 
 
 public class LazyInitAgent implements ClassFileTransformer {
@@ -15,7 +13,7 @@ public class LazyInitAgent implements ClassFileTransformer {
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] bytes) throws IllegalClassFormatException {
 		try {
-			ClassReader creader = new ClassReader(bytes);
+//			ClassReader creader = new ClassReader(bytes);
 			//Method
 			//creader.accept(visitor, 0);
 			
@@ -27,4 +25,6 @@ public class LazyInitAgent implements ClassFileTransformer {
 		return null;
 	}
 
+	
+	
 }

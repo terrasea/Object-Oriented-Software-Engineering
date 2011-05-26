@@ -3,7 +3,6 @@ package transform;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -16,8 +15,8 @@ public class AddFieldAdapter extends ClassAdapter {
 
 	private int fAcc;
 	private String fName;
-	private String fDesc;
-	private boolean isFieldPresent;
+//	private String fDesc;
+//	private boolean isFieldPresent;
 
 	private String klassName;
 
@@ -25,7 +24,7 @@ public class AddFieldAdapter extends ClassAdapter {
 		super(cv);
 		this.fAcc = fAcc;
 		this.fName = fName;
-		this.fDesc = fDesc;
+//		this.fDesc = fDesc;
 
 		// this.visit(version, access, name, signature, superName, interfaces)
 	}
@@ -58,7 +57,7 @@ public class AddFieldAdapter extends ClassAdapter {
 	public FieldVisitor visitField(int access, String name, String desc,
 			String signature, Object value) {
 		if (name.equals(fName)) {
-			isFieldPresent = true;
+			//isFieldPresent = true;
 		}
 
 		System.out

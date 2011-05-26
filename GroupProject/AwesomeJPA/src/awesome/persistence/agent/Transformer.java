@@ -3,11 +3,12 @@ package awesome.persistence.agent;
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.ClassFileTransformer;
+import java.util.ArrayList;
 import java.util.List;
 
 
 
-public class Transformer {
+public abstract class Transformer {
 	private static List<ClassFileTransformer> transformers = null;
 	private static Instrumentation instrumentation = null;
 
@@ -30,5 +31,21 @@ public class Transformer {
 		}
 
 		instrumentation.redefineClasses(definitions);
+	}
+	
+	
+	public void addTransformer(ClassFileTransformer clt) {
+		if (transformers == null) {
+			transformers = new ArrayList<ClassFileTransformer>();
+		}
+		
+		transformers.add(clt);
+	}
+	
+	
+	public static void delTransformer(ClassFileTransformer clt) {
+		if (transformers != null) {
+			while(transformers.remove(clt));
+		}
 	}
 }

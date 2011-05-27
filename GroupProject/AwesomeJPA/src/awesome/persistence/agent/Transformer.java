@@ -1,22 +1,23 @@
 package awesome.persistence.agent;
 
+import java.io.IOException;
 import java.lang.instrument.ClassDefinition;
-import java.lang.instrument.Instrumentation;
 import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.sun.tools.attach.VirtualMachine;
-
-import sun.jvmstat.monitor.MonitoredHost;
-import sun.jvmstat.monitor.MonitoredVm;
 import sun.management.VMManagement;
+
+import com.sun.tools.attach.AgentInitializationException;
+import com.sun.tools.attach.AgentLoadException;
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
 
 public abstract class Transformer {
 	private static List<ClassFileTransformer> transformers = null;
@@ -64,26 +65,86 @@ public abstract class Transformer {
 		}
 	}
 
+	public static String getCurrentPID() {
+		RuntimeMXBean mxbean = (RuntimeMXBean) ManagementFactory
+				.getRuntimeMXBean();
+		Field jvmField = null;
+		try {
+			jvmField = mxbean.getClass().getDeclaredField("jvm");
+			jvmField.setAccessible(true);
+
+			VMManagement management = (VMManagement) jvmField.get(mxbean);
+			Method method = management.getClass().getDeclaredMethod(
+					"getProcessId");
+			method.setAccessible(true);
+			Integer processId = (Integer) method.invoke(management);
+			return processId.toString();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	private static final String CLASS_PATH = System
+			.getProperty("java.class.path");
+
+	private static final String INSTR_JAR_NAME = "Transform";
+
+	private static final String OS_NAME = System.getProperty("os.name");
+
 	public static void startAgent() {
 		if (!agentRunning) {
-			RuntimeMXBean mxbean = (RuntimeMXBean) ManagementFactory
-					.getRuntimeMXBean();
-			Field jvmField = null;
 			try {
-				jvmField = mxbean.getClass().getDeclaredField("jvm");
-				jvmField.setAccessible(true);
-
-				VMManagement management = (VMManagement) jvmField.get(mxbean);
-				Method method = management.getClass().getDeclaredMethod(
-						"getProcessId");
-				method.setAccessible(true);
-				Integer processId = (Integer) method.invoke(management);
-				VirtualMachine vm = VirtualMachine.attach(processId.toString());
-
+				String processId = getCurrentPID();
+				VirtualMachine vm = VirtualMachine.attach(processId);
+				String splitter = OS_NAME.equalsIgnoreCase("Windows") ? ";" : ":";
+				String agentPath = null;
+				for (String entry : CLASS_PATH.split(splitter)) {
+					System.out.println("Entry: " + entry);
+					if (entry.toLowerCase().startsWith(INSTR_JAR_NAME.toLowerCase())) {
+						agentPath = entry;
+						break;
+					}
+				}
+				if (agentPath != null) {
+					vm.loadAgent(agentPath);
+					
+				}
+					
+				vm.detach();
 			} catch (SecurityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (NoSuchFieldException e) {
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (AttachNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (AgentLoadException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (AgentInitializationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

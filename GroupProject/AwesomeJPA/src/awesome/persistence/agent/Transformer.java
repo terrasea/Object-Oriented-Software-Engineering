@@ -115,7 +115,7 @@ public abstract class Transformer {
 
 	private static final String OS_NAME = System.getProperty("os.name");
 
-	public static void startAgent() {
+	public static void startAgent() throws AgentException {
 		if (!agentRunning) {
 			try {
 				String processId = getCurrentPID();
@@ -132,33 +132,31 @@ public abstract class Transformer {
 				if (agentPath != null) {
 					vm.loadAgent(agentPath);
 					
+				}else {
+					throw new AgentException(String.format("Agent jar file starting with %s not in Classpath", INSTR_JAR_NAME));
 				}
 					
 				vm.detach();
 			} catch (SecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new AgentException(e.toString());
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new AgentException(e.toString());
 			} catch (AttachNotSupportedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new AgentException(e.toString());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new AgentException(e.toString());
 			} catch (AgentLoadException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new AgentException(e.toString());
 			} catch (AgentInitializationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new AgentException(e.toString());
 			}
 		}
 
 	}
 
-	public static void main(String[] args) {
-		startAgent();
+	
+	public static boolean agentRunning() {
+		return agentRunning;
 	}
+	
 }

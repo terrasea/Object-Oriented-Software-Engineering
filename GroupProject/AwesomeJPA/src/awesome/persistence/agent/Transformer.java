@@ -50,17 +50,23 @@ public abstract class Transformer {
 		instrumentation.redefineClasses(definitions);
 	}
 
-	public void addTransformer(ClassFileTransformer clt) {
+	public static void addTransformer(ClassFileTransformer clt) {
 		if (transformers == null) {
 			transformers = new ArrayList<ClassFileTransformer>();
 		}
-
+		if(instrumentation != null) {
+			instrumentation.addTransformer(clt);
+		}
 		transformers.add(clt);
 	}
 
-	public static void delTransformer(ClassFileTransformer clt) {
+	public static void removeTransformer(ClassFileTransformer clt) {
 		if (transformers != null) {
 			while (transformers.remove(clt))
+				;
+		}
+		if(instrumentation != null) {
+			while(instrumentation.removeTransformer(clt))
 				;
 		}
 	}

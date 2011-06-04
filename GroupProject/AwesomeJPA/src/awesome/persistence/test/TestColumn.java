@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.persistence.Column;
+import awesome.persistence.annotations.Column;
 
 
 public class TestColumn {
@@ -12,10 +12,8 @@ public class TestColumn {
 		@Column
 		int test;
 		
-		
 		@Column(name="TEST2", length=20, nullable=false, unique=true)
 		String test2;
-		
 	}
 	
 	TestClass klass = new TestClass();
@@ -30,15 +28,12 @@ public class TestColumn {
 		Assert.assertEquals(false, column.unique());
 	}
 	
-	
-	
 	@Test
 	public void testSetName() throws SecurityException, NoSuchFieldException {
 		Column column = klass.getClass().getDeclaredField("test2").getAnnotation(Column.class);
 		Assert.assertNotNull(column);
 		Assert.assertEquals("TEST2", column.name());
 	}
-	
 	
 	@Test
 	public void testSetLength() throws SecurityException, NoSuchFieldException {
@@ -53,7 +48,6 @@ public class TestColumn {
 		Assert.assertNotNull(column);
 		Assert.assertEquals(false, column.nullable());
 	}
-	
 	
 	@Test
 	public void testSetUnique() throws SecurityException, NoSuchFieldException {

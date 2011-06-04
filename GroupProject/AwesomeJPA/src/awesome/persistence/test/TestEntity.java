@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.persistence.Entity;
+import awesome.persistence.annotations.Entity;
 
 public class TestEntity {
 	@Entity(name="Test")

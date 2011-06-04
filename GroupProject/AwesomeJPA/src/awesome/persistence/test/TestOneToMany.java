@@ -4,8 +4,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.persistence.FetchType;
-import awesome.persistence.OneToMany;
+import awesome.persistence.annotations.FetchType;
+import awesome.persistence.annotations.OneToMany;
 
 
 public class TestOneToMany {

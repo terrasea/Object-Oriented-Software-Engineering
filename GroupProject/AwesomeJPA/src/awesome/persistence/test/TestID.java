@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.persistence.ID;
+import awesome.persistence.annotations.ID;
 
 
 public class TestID {

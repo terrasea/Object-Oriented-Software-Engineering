@@ -6,8 +6,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import awesome.persistence.FetchType;
-import awesome.persistence.ManyToMany;
+import awesome.persistence.annotations.FetchType;
+import awesome.persistence.annotations.ManyToMany;
 
 
 public class TestManyToMany {

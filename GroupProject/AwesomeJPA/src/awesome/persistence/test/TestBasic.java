@@ -3,8 +3,8 @@ package awesome.persistence.test;
 import org.junit.Assert;
 import org.junit.Test;
 
-import awesome.persistence.Basic;
-import awesome.persistence.FetchType;
+import awesome.persistence.annotations.Basic;
+import awesome.persistence.annotations.FetchType;
 
 
 public class TestBasic {

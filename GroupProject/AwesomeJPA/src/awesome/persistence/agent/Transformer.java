@@ -19,6 +19,11 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
+/**
+ * 
+ * Transformer class
+ *
+ */
 public abstract class Transformer {
 	private static List<ClassFileTransformer> transformers = null;
 	private static Instrumentation instrumentation = null;
@@ -108,8 +113,7 @@ public abstract class Transformer {
 		return null;
 	}
 
-	private static final String CLASS_PATH = System
-			.getProperty("java.class.path");
+	private static final String CLASS_PATH = System.getProperty("java.class.path");
 
 	private static final String INSTR_JAR_NAME = "Transform";
 
@@ -154,7 +158,6 @@ public abstract class Transformer {
 
 	}
 
-	
 	public static boolean agentRunning() {
 		return agentRunning;
 	}

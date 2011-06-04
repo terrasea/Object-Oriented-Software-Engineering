@@ -1,4 +1,10 @@
-package awesome.persistence;
+package awesome.persistence.annotations;
+
+/**
+ * 
+ * Manager class
+ *
+ */
 
 public class Manager {
 	

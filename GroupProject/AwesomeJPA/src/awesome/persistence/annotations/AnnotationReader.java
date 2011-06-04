@@ -13,13 +13,14 @@ import java.lang.reflect.Field;
 public class AnnotationReader {
 
 	@SuppressWarnings("rawtypes")
-	public static void processAnnotations(Object obj){
+	public static void readAnnotations(Object obj){
 		
+		// Get the class of the object
 		Class c = obj.getClass();
 		
-
+		// Get list of the declared fields in the class
 		Field[] fields =  c.getDeclaredFields();
-		System.out.println("PRINTING FIELDS");
+
 		for(int index = 0; index < fields.length; index++){
 			Field f = fields[index];
 			System.out.println("Printing annotations for - " + f.toString());

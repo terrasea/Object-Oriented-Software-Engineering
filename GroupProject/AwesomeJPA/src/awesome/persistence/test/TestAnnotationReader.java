@@ -18,7 +18,7 @@ public class TestAnnotationReader {
 	
 	@Test
 	public void simpleTest(){
-		AnnotationReader.processAnnotations(test);
+		AnnotationReader.readAnnotations(test);
 		assertTrue(true);
 	}
 }

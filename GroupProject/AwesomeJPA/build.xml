@@ -10,8 +10,8 @@
 
 	<!-- Main, Premain and Agentmain Classes defined here -->
 	<property name="agent.main" value="awesome.persistence.agent.Transformer" />
-	<property name="agent.premain" value="transform.Transfromer" />
-	<property name="agent.agentmain" value="transform.Transfromer" />
+	<property name="agent.premain" value="awesome.persistence.agent.Transformer" />
+	<property name="agent.agentmain" value="awesome.persistence.agent.Transformer" />
 	<property name="jar.classpath" value="${lib.dir}/asm-4.0_RC1.jar ${java.home}/../lib//tools.jar" />
 
 	<path id="project.class.path">
@@ -26,7 +26,7 @@
 		<mkdir dir="${jar.dir}" />
 	</target>
 
-	<target name="compile" depends="init">
+	<target  name="compile" depends="init">
 		<javac destdir="${build.dir}" classpathref="project.class.path">
 			<src path="${src.dir}" />
 		</javac>
@@ -45,7 +45,7 @@
 				<attribute name="Agent-Class" value="${agent.agentmain}" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 				<attribute name="Can-Retransform-Classes" value="true" />
-				<attribute name="Boot-Class-Path" value="${jar.classpath}" />
+				<!--<attribute name="Boot-Class-Path" value="${jar.classpath}" />-->
 			</manifest>
 		</jar>
 		<copy todir="${jar.lib.dir}">

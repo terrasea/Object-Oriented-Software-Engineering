@@ -6,8 +6,7 @@ import java.util.HashSet;
 public class Tempt {
 	
 	public Tempt() {
-		
-		
+		fields.put("id", false);
 	}
 	
 	
@@ -15,7 +14,9 @@ public class Tempt {
 	
 	
 	public void tempt() {
-		//if()
+		if(fields.get("id")) {
+			return;
+		}
 		System.out.println("You want it don't you?");
 	}
 	

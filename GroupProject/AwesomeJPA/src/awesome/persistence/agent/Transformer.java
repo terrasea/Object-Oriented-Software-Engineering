@@ -126,18 +126,8 @@ public abstract class Transformer {
 	public static void startAgent() throws AgentException {
 		if (!agentRunning) {
 			try {
-				VirtualMachineDescriptor vmDescriptor = null;
-				for(VirtualMachineDescriptor descr: VirtualMachine.list()) {
-					System.out.println("descriptor: " + descr.displayName());
-					System.out.println("provider name: " + descr.provider().name());
-					if(descr.displayName().startsWith(INSTR_JAR_NAME) || descr.displayName().endsWith("Main")) {
-						vmDescriptor = descr;
-						break;
-					}
-				}
-				VirtualMachine vm = VirtualMachine.attach(vmDescriptor);
-				//String processId = getCurrentPID();
-				//VirtualMachine vm = VirtualMachine.attach(processId);
+				String processId = getCurrentPID();
+				VirtualMachine vm = VirtualMachine.attach(processId);
 				String splitter = OS_NAME.equalsIgnoreCase("Windows") ? ";" : ":";
 				String agentPath = null;
 				for (String entry : CLASS_PATH.split(splitter)) {

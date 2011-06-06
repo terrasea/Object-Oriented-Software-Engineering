@@ -47,7 +47,11 @@ public class LazyInitAdaptor extends ClassAdapter {
 	public void visitEnd() {
 		if (isEntity) {
 			FieldVisitor fv;
-			fv = cv.visitField(Opcodes.ACC_PUBLIC, "fields", "Ljava/util/HashSet;", "Ljava/util/HashSet<Ljava/lang/String;>;", null);
+			fv = cv.visitField(Opcodes.ACC_PUBLIC, 
+					"fields", 
+					"Ljava/util/HashSet;", 
+					"Ljava/util/HashSet<Ljava/lang/String;>;", 
+					null);
 			
 			if (fv != null) {
 				fv.visitEnd();

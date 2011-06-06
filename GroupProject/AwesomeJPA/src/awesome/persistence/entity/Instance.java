@@ -11,7 +11,7 @@ public class Instance {
 		
 	}
 	
-	int field = 0;
+	public int field = 0;
 	
 	
 	public int getField() {

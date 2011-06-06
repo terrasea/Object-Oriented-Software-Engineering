@@ -104,4 +104,14 @@ public class LazyInitAdaptor extends ClassAdapter {
 			mv.visitMaxs(maxStack + 4, maxLocals);
 		}
 	}
+	
+	class LazyInitGetterAdaptor extends MethodAdapter {
+
+		public LazyInitGetterAdaptor(MethodVisitor arg0) {
+			super(arg0);
+		}
+		
+		
+		
+	}
 }

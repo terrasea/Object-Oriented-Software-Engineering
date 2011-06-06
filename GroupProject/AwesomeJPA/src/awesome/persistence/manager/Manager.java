@@ -19,7 +19,6 @@ public class Manager {
 	
 	// Properties extracted from the awesome.properties file
 	private static Properties properties;
-	
 	/**
 	 * Sets up the properties for the Manager
 	 * @throws IOException Thrown if the awesome.properties file cannot be loaded
@@ -41,18 +40,20 @@ public class Manager {
 	/**
 	 * Sends an object to the database
 	 * @param entity The entity to store in the database
+	 * @throws NotAEntity 
 	 */
-	@SuppressWarnings("rawtypes")
-	public static void persist(Object entity) {
+	public static void persist(Object entity) throws NotAEntity {
 		// Get the class of the object
-		Class c = entity.getClass();
-		
+		Class<? extends Object> c = entity.getClass();
+		if(isEntity(c.getName())) {
 		// Get list of the declared fields in the class
+		@SuppressWarnings("unused")
 		Field[] fields =  c.getDeclaredFields();
 		
 		
 		
-		Connection dbcon;
+		@SuppressWarnings("unused")
+		Connection dbcon = null;
 		try {
 			dbcon = getConnection();
 		} catch (SQLException e) {
@@ -61,7 +62,11 @@ public class Manager {
 			return;
 		}
 		
+		@SuppressWarnings("unused")
 		String sql = "CREATE ";
+		} else {
+			throw new NotAEntity("Not in the list of entities to persist");
+		}
 	}
 	
 	/**

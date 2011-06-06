@@ -87,7 +87,7 @@ public abstract class Transformer {
 			jvmField.setAccessible(true);
 
 			VMManagement management = (VMManagement) jvmField.get(mxbean);
-			System.out.println("management VmId: " + management.getVmId());
+			//System.out.println("management VmId: " + management.getVmId());
 			Method method = management.getClass().getDeclaredMethod(
 					"getProcessId");
 			method.setAccessible(true);

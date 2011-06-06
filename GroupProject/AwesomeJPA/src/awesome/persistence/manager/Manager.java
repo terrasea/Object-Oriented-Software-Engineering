@@ -2,9 +2,11 @@ package awesome.persistence.manager;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
 import awesome.persistence.annotations.Entity;
@@ -25,7 +27,7 @@ public class Manager {
 	 * @throws IOException Thrown if the awesome.properties file cannot be loaded
 	 */
 	public Manager(String propertiesPath) throws IOException, PropertiesException{
-		// Initialise properties
+		// Initialize properties
 		properties = new Properties();
 		
 		// Load properties from file
@@ -36,14 +38,43 @@ public class Manager {
 			// Invalid properties file, throw exception
 			throw new PropertiesException("Invalid properties file provided.");
 		}
+		
 	}
 	
 	/**
 	 * Sends an object to the database
 	 * @param entity The entity to store in the database
 	 */
+	@SuppressWarnings("rawtypes")
 	public void persist(Object entity) {
+		// Get the class of the object
+		Class c = entity.getClass();
 		
+		// Get list of the declared fields in the class
+		Field[] fields =  c.getDeclaredFields();
+		
+		
+		
+		Connection dbcon;
+		try {
+			dbcon = getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		
+		String sql = "CREATE ";
+	}
+	
+	/**
+	 * 
+	 * @param query
+	 * @return
+	 */
+	public List<Object> queryDB(String query){
+		
+		return null;
 	}
 	
 	/**

@@ -50,6 +50,7 @@ public class AddTimerAdapter extends ClassAdapter {
 	class AddTimerMethodAdapter extends MethodAdapter {
 		public AddTimerMethodAdapter(MethodVisitor mv) {
 			super(mv);
+			
 		}
 
 		@Override

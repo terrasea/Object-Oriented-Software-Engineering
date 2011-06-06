@@ -8,3 +8,5 @@ Transform classes at runtime
 http://www.ibm.com/developerworks/java/library/j-cwt06075/
 http://asm.ow2.org/doc/faq.html
 http://sleeplessinslc.blogspot.com/2008/09/java-instrumentation-with-jdk-16x-class.html
+"How to get the byte code of a existing class in ASM format"
+http://asm.ow2.org/doc/faq.html#Q10

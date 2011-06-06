@@ -13,11 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sun.management.VMManagement;
+import awesome.persistence.entity.Instance;
 
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 
 /**
  * 
@@ -85,10 +87,12 @@ public abstract class Transformer {
 			jvmField.setAccessible(true);
 
 			VMManagement management = (VMManagement) jvmField.get(mxbean);
+			System.out.println("management VmId: " + management.getVmId());
 			Method method = management.getClass().getDeclaredMethod(
 					"getProcessId");
 			method.setAccessible(true);
 			Integer processId = (Integer) method.invoke(management);
+			System.out.println("process id: " + processId);
 			return processId.toString();
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block
@@ -115,15 +119,25 @@ public abstract class Transformer {
 
 	private static final String CLASS_PATH = System.getProperty("java.class.path");
 
-	private static final String INSTR_JAR_NAME = "Transform";
+	private static final String INSTR_JAR_NAME = "AwesomeJPA";
 
 	private static final String OS_NAME = System.getProperty("os.name");
 
 	public static void startAgent() throws AgentException {
 		if (!agentRunning) {
 			try {
-				String processId = getCurrentPID();
-				VirtualMachine vm = VirtualMachine.attach(processId);
+				VirtualMachineDescriptor vmDescriptor = null;
+				for(VirtualMachineDescriptor descr: VirtualMachine.list()) {
+					System.out.println("descriptor: " + descr.displayName());
+					System.out.println("provider name: " + descr.provider().name());
+					if(descr.displayName().startsWith(INSTR_JAR_NAME) || descr.displayName().endsWith("Main")) {
+						vmDescriptor = descr;
+						break;
+					}
+				}
+				VirtualMachine vm = VirtualMachine.attach(vmDescriptor);
+				//String processId = getCurrentPID();
+				//VirtualMachine vm = VirtualMachine.attach(processId);
 				String splitter = OS_NAME.equalsIgnoreCase("Windows") ? ";" : ":";
 				String agentPath = null;
 				for (String entry : CLASS_PATH.split(splitter)) {
@@ -133,6 +147,7 @@ public abstract class Transformer {
 						break;
 					}
 				}
+				System.out.println("Agent Path: " + agentPath);
 				if (agentPath != null) {
 					vm.loadAgent(agentPath);
 					
@@ -162,4 +177,19 @@ public abstract class Transformer {
 		return agentRunning;
 	}
 	
+	
+	public static void main(String[] argv) {
+		Transformer.addTransformer(new LazyInitAgent());
+		try {
+			Transformer.startAgent();
+		} catch (AgentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("Agent running: " + Transformer.agentRunning());
+		
+		Instance inst = new Instance();
+		inst.printAttributes();
+	}
 }

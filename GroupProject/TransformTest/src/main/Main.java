@@ -49,6 +49,7 @@ public class Main {
 			VirtualMachineDescriptor vmDescriptor = null;
 			for(VirtualMachineDescriptor descr: VirtualMachine.list()) {
 				System.out.println("descriptor: " + descr.displayName());
+				System.out.println("provider name: " + descr.provider().name());
 				if(descr.displayName().endsWith(INSTR_JAR_NAME) || descr.displayName().endsWith("Main")) {
 					vmDescriptor = descr;
 					break;

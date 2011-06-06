@@ -3,10 +3,7 @@ package awesome.persistence.entity;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 
-import awesome.persistence.annotations.Entity;
 
-
-@Entity
 public class Instance {
 	//HashSet<String> fields = new HashSet<String>();
 	

@@ -8,7 +8,6 @@ import java.io.IOException;
 import org.junit.Test;
 
 import awesome.persistence.annotations.Basic;
-import awesome.persistence.annotations.Entity;
 import awesome.persistence.manager.Manager;
 import awesome.persistence.manager.PropertiesException;
 
@@ -19,7 +18,7 @@ import awesome.persistence.manager.PropertiesException;
  */
 public class TestManager {
 
-	@Entity
+
 	class Primatives{
 		@Basic
 		private String pString;
@@ -87,10 +86,8 @@ public class TestManager {
 	
 	@Test
 	public void testConstructor(){
-		Manager m;
 		try {
-			m = new Manager("awesome.properties");
-			assertTrue(m != null);
+			Manager.setProperties("awesome.properties");
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail();
@@ -102,14 +99,12 @@ public class TestManager {
 	
 	@Test(expected=IOException.class)
 	public void testConstructorNoFile() throws IOException, PropertiesException{
-		Manager m = new Manager("awesome.propertiesNOFILE");
-		fail();
+		Manager.setProperties("awesome.propertiesNOFILE");
 	}
 	
 	@Test(expected=PropertiesException.class)
 	public void testConstructorEmptyFile()throws IOException, PropertiesException{
-		Manager m = new Manager("awesomeInvalid.properties");
-		fail();
+		Manager.setProperties("awesomeInvalid.properties");
 	}
 	
 	@Test

@@ -9,8 +9,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
-import awesome.persistence.annotations.Entity;
-
 /**
  * 
  * Manager class
@@ -20,13 +18,13 @@ import awesome.persistence.annotations.Entity;
 public class Manager {
 	
 	// Properties extracted from the awesome.properties file
-	private Properties properties;
+	private static Properties properties;
 	
 	/**
-	 * Constructor for the manager, 
+	 * Sets up the properties for the Manager
 	 * @throws IOException Thrown if the awesome.properties file cannot be loaded
 	 */
-	public Manager(String propertiesPath) throws IOException, PropertiesException{
+	public static void setProperties(String propertiesPath) throws IOException, PropertiesException{
 		// Initialize properties
 		properties = new Properties();
 		
@@ -38,7 +36,6 @@ public class Manager {
 			// Invalid properties file, throw exception
 			throw new PropertiesException("Invalid properties file provided.");
 		}
-		
 	}
 	
 	/**
@@ -46,7 +43,7 @@ public class Manager {
 	 * @param entity The entity to store in the database
 	 */
 	@SuppressWarnings("rawtypes")
-	public void persist(Object entity) {
+	public static void persist(Object entity) {
 		// Get the class of the object
 		Class c = entity.getClass();
 		
@@ -68,47 +65,24 @@ public class Manager {
 	}
 	
 	/**
+	 * Queries the database using the provided AQL script.
 	 * 
-	 * @param query
-	 * @return
+	 * @param query The query to execute on the database.
+	 * @return List of objects that match the provided query.
 	 */
-	public List<Object> queryDB(String query){
+	public static List<Object> queryDB(String query){
 		
 		return null;
 	}
 	
 	/**
-	 * Starts a transaction with the database
+	 * 
+	 * @param name
+	 * @return
 	 */
-	public void startTransaction() {
-		
-	}
-	
-	/**
-	 * Commits the current transaction to the database
-	 */
-	public void commitTransaction() {
-		
-	}
-	
-	/**
-	 * Roll back the last transaction on the database
-	 */
-	public void rollBack() {
-		
-	}
-	
-	
 	public static boolean isEntity(String name) {
 		System.out.println("isEntity: "+ name);
 		return true;
-	}
-	/**
-	 * 
-	 * @param entity
-	 */
-	protected void transformEntity(Entity entity) {
-		
 	}
 
 	/**
@@ -116,7 +90,7 @@ public class Manager {
 	 * @return A valid connection to the database
 	 * @throws SQLException Thrown if a connection to the database cannot be established
 	 */
-	private Connection getConnection() throws SQLException {
+	private static Connection getConnection() throws SQLException {
 		// Create properties for the connections
 		Properties connectionProps = new Properties();
 		

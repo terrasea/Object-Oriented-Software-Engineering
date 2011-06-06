@@ -7,6 +7,8 @@ import java.security.ProtectionDomain;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
+import awesome.persistence.manager.Manager;
+
 
 
 
@@ -20,7 +22,7 @@ public class LazyInitAgent implements ClassFileTransformer {
 		System.out.println("transform: " + className);
 		ClassReader cr = new ClassReader(b);
 		ClassWriter cw = new ClassWriter(cr, 0);
-		if( className.endsWith("Instance") ) {
+		if( Manager.isEntity(className) ) {
 			
 			System.out.println("transform3: " + className);
 			cr.accept(new LazyInitAdaptor(cw), 0);

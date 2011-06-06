@@ -39,6 +39,11 @@ public class LazyInitAdaptor extends ClassAdapter {
 				exceptions);
 		if (isEntity && mv != null && name.equals("<init>")) {
 			mv = new LazyInitMethodAdapter(mv, owner);
+		} else {
+			//transform getters
+			if(isEntity && mv != null && name.startsWith("get")) {
+				
+			}
 		}
 		return mv;
 	}
@@ -60,11 +65,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 		cv.visitEnd();
 	}
 	
-	@Override
-	public FieldVisitor visitField(int opcodes, String name, String desc, String sig, Object value) {
-		return new LazyInitFieldAdaptor(cv.visitField(opcodes, name, desc, sig, value));
-		
-	}
+
 
 	class LazyInitMethodAdapter extends MethodAdapter {
 		String owner;
@@ -78,27 +79,16 @@ public class LazyInitAdaptor extends ClassAdapter {
 			System.out.println("LazyInitMethodAdapter");
 			owner = name;
 		}
-
-//		@Override
-//		public void visit(int version, int access, String name, String signature,
-//				String superName, String[] interfaces) {
-//			cv.visit(version, access, name, signature, superName, interfaces);
-//			owner = name;
-//		}
+		
 		
 		@Override
 		public void visitCode() {
-			//mv = cv.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
 			mv.visitCode();
-			//mv.visitVarInsn(Opcodes.ALOAD, 0);
-			//mv.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
 			mv.visitVarInsn(Opcodes.ALOAD, 0);
 			mv.visitTypeInsn(Opcodes.NEW, "java/util/HashSet");
 			mv.visitInsn(Opcodes.DUP);
 			mv.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/HashSet", "<init>", "()V");
 			mv.visitFieldInsn(Opcodes.PUTFIELD, owner, "fields", "Ljava/util/HashSet;");
-			//mv.visitInsn(Opcodes.RETURN);
-			
 		}
 
 		@Override

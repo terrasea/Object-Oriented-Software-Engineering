@@ -11,22 +11,48 @@ public class Instance {
 		
 	}
 	
+	int field = 0;
+	
+	
+	public int getField() {
+		return field;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public void printAttributes() {
 		for(Field field : this.getClass().getDeclaredFields()) {
 			System.out.println("Field: " + field.getName() + ", Type: " + field.getType());
-			try {
-				HashSet<String> hashSet = (HashSet<String>)field.get(this);
-				System.out.println("Fields: " + hashSet);
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if(field.getName().equals("fields")) {
+				HashSet<String> hashSet;
+				try {
+					hashSet = (HashSet<String>)field.get(this);
+					System.out.println("Fields: " + hashSet);
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			}
 		}
-		
+		try {
+			Field field = this.getClass().getDeclaredField("fields");
+			HashSet<String> hashSet = (HashSet<String>)field.get(this);
+			System.out.println("Fields: " + hashSet);
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

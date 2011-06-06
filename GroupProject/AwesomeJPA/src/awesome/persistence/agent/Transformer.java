@@ -180,6 +180,8 @@ public abstract class Transformer {
 		System.out.println("Agent running: " + Transformer.agentRunning());
 		
 		Instance inst = new Instance();
+		System.out.println(inst.getField());
 		inst.printAttributes();
+		
 	}
 }

@@ -3,13 +3,11 @@ package awesome.persistence.manager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,6 +47,7 @@ public class Manager {
 
 	/**
 	 * Sends an object to the database
+	 * 
 	 * 
 	 * @param entity
 	 *            The entity to store in the database
@@ -143,7 +142,6 @@ public class Manager {
 	 * @return
 	 */
 	public static boolean isEntity(String name) {
-		System.out.println("isEntity: " + name);
 		return true;
 	}
 

@@ -173,7 +173,6 @@ public class Manager {
 	 * @return List of objects that match the provided query.
 	 */
 	public static List<Object> queryDB(String query) {
-
 		return null;
 	}
 

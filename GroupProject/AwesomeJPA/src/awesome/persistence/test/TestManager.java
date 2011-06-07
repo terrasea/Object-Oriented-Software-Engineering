@@ -100,4 +100,20 @@ public class TestManager {
 		float f = (Float) Manager.getField(p.getClass().getName(), 1, "pFloat");
 		Assert.assertTrue(f == new Float(0.1));
 	}
+	
+	@Test
+	public void testDelete() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
+		Manager.setProperties(propertiesPath);
+		Primatives p = new Primatives();
+		p.setPBool(true);
+		p.setPChar('c');
+		p.setPDouble(100.110);
+		p.setPFloat(new Float(0.1));
+		p.setPInt(100);
+		p.setPString("HELLO WORLD");
+		
+		Manager.persist(p);
+		
+		Assert.assertTrue(Manager.deleteFromDb(p.getClass().getName(), 1));
+	}
 }

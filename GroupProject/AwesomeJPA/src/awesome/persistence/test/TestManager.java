@@ -3,6 +3,7 @@ package awesome.persistence.test;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import org.junit.Test;
 
@@ -18,8 +19,8 @@ import awesome.persistence.manager.PropertiesException;
  */
 public class TestManager {
 
-	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/Object-Oriented-Software-Engineering/GroupProject/AwesomeJPA/awesome.properties";
-	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/Object-Oriented-Software-Engineering/GroupProject/AwesomeJPA/awesomeInvalid.properties";
+	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesome.properties";
+	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesomeInvalid.properties";
 
 	public class Primatives{
 		@Basic
@@ -111,7 +112,7 @@ public class TestManager {
 	}
 	
 	@Test
-	public void testPersist() throws NotAEntity, IOException, PropertiesException{
+	public void testPersist() throws NotAEntity, IOException, PropertiesException, SQLException{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);

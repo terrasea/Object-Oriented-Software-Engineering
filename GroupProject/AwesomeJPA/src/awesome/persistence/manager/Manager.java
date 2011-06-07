@@ -18,7 +18,6 @@ import java.util.Properties;
  * Manager class
  * 
  */
-
 public class Manager {
 
 	// Properties extracted from the awesome.properties file
@@ -54,7 +53,7 @@ public class Manager {
 	 *            The entity to store in the database
 	 * @throws NotAEntity
 	 */
-	public static void persist(Object entity) throws NotAEntity {
+	public static void persist(Object entity) throws SQLException, NotAEntity {
 		// Get the class of the object
 		Class<? extends Object> c = entity.getClass();
 		
@@ -88,40 +87,103 @@ public class Manager {
 				// Add to sql column names
 				insertSql.append(f.getName());
 				
+				// Split field info on white space
 				String[] info = f.toString().split(" ");
 				
+				// Get type of field
 				String type = info[info.length - 2];
 				
+				// Method of the getter for the field
+				Method getter;
+				
+				try {
+					getter = c.getMethod("get" + capitalize(f.getName()), null);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return;
+				} 
 				
 				if(type.equals("java.lang.String")){
-
-				}else if(type.equals("int")){
-
-				}else if(type.equals("boolean")){
-
-				}else if(type.equals("double")){
-
-					Method getter;
-					Double d;
-		            try {
-						getter = c.getMethod("get" + capitalize(f.getName()), null);
-						d = (Double) getter.invoke(entity, null);
+					try {
+						String s = (String) getter.invoke(entity, null);
+						valsBuilder.append("'" + s + "'");
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 						return;
-					} 
-					
+					}
+				}else if(type.equals("int")){
+					try {
+						Integer i = (Integer) getter.invoke(entity, null);
+						valsBuilder.append(i.toString());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
+				}else if(type.equals("boolean")){
+					try {
+						Boolean b = (Boolean) getter.invoke(entity, null);
+						if(b)
+							valsBuilder.append("1");
+						else
+							valsBuilder.append("0");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
+				}else if(type.equals("double")){
+					try {
+						Double d = (Double) getter.invoke(entity, null);
+						valsBuilder.append(d.toString());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
 				}else if(type.equals("float")){
-
+					try {
+						Float fl = (Float) getter.invoke(entity, null);
+						valsBuilder.append(fl.toString());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
 				}else if(type.equals("char")){
-
+					try {
+						Character ch = (Character) getter.invoke(entity, null);
+						valsBuilder.append("'" + ch.toString() + "'");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
 				}else{
 					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 				}
+				
+				if(index != fields.length - 2){
+					valsBuilder.append(", ");
+					insertSql.append(", ");
+				}
 			}
+			insertSql.append(") ");
+			valsBuilder.append(" ) ");
+			
+			String outputSql = insertSql.toString() + valsBuilder.toString();
+			System.out.println("OUT - " + outputSql);
 		} else {
 			throw new NotAEntity("Not in the list of entities to persist");
+		}
+		Connection dbcon;
+		try {
+			dbcon = getConnection();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -151,23 +213,18 @@ public class Manager {
 	 * Gets a connection to the database provided in the awesome.properties file
 	 * 
 	 * @return A valid connection to the database
-	 * @throws SQLException
+	 * @throws Exception
 	 *             Thrown if a connection to the database cannot be established
 	 */
-	private static Connection getConnection() throws SQLException {
-
-		try {
-			DriverManager.registerDriver((Driver) Class.forName("com.mysql.jdbc.Driver").newInstance());
-			System.out.println("lol");
-		} catch (Exception e) {
-			throw new SQLException("JDBC driver could not be loaded.");
-		}
-		//DriverManager.registerDriver(driver)
-		
-		// Create the connection and return it
-		return DriverManager.getConnection(properties.getProperty("url"), 
-				properties.getProperty("user"), 
-				properties.getProperty("password"));
+	private static Connection getConnection() throws Exception {
+		// Get url from properties file
+		String url = properties.getProperty("url");
+		// Remove quotations
+		url = url.substring(1, url.length() - 1);
+		// Get the driver class
+	    Class.forName("org.sqlite.JDBC");
+	    // Create the connection and return it
+		return DriverManager.getConnection(url);
 	}
 	
 	/**
@@ -175,14 +232,14 @@ public class Manager {
 	 * 
 	 * @param entity The object to make a table in the database for.
 	 */
-	private static void createTable(Object entity){
+	private static void createTable(Object entity) throws SQLException{
 		// Get the class of the object
 		Class<? extends Object> c = entity.getClass();
 		
 		// Start sql string
 		StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TABLE " + c.getName().replace('$', '_').replace('.','_') + " (");
-		sql.append(" awesome_id INT NOT NULL AUTO_INCREMENT, ");
+		sql.append(" awesome_id INTEGER PRIMARY KEY , ");
 		// Get list of the declared fields in the class
 		Field[] fields = c.getDeclaredFields();
 		
@@ -204,7 +261,7 @@ public class Manager {
 			}else if(type.equals("int")){
 				sql.append(" INT");
 			}else if(type.equals("boolean")){
-				sql.append(" BOOL");
+				sql.append(" TINYINT(1)");
 			}else if(type.equals("double")){
 				sql.append(" DOUBLE PRECISION");
 			}else if(type.equals("float")){
@@ -222,7 +279,19 @@ public class Manager {
 			System.out.println("type - " + info[info.length - 2]);
 		}
 		
-		sql.append(", PRIMARY KEY(awesome_id))");
+		sql.append(")");
+		
+		Connection dbcon;
+		try {
+			dbcon = getConnection();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		Statement stmt = dbcon.createStatement();
+		stmt.executeUpdate(sql.toString());
+		dbcon.close();
 	}
 	
     private static String capitalize(String s) {

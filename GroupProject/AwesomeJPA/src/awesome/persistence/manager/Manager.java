@@ -9,6 +9,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -98,14 +99,13 @@ public class Manager {
 
 			// Attempt to get the getter for the field
 			try {
-				getter = c.getMethod("get" + capitalize(f.getName()),
-						(Class<?>[]) null);
+				getter = c.getMethod("get" + capitalize(f.getName()), (Class<?>[]) null);
 			} catch (Exception e) {
 				// the method could not be accessed throw exception
-				throw new EntityException("Error accessing getter for field '"
-						+ f.getName() + "'");
+				throw new EntityException("Error accessing getter for field '" + f.getName() + "'");
 			}
 			
+			// Attempt to get the value of the object from the fields getter
 			try {
 				if (type.equals("java.lang.String")) {
 					String s = (String) getter.invoke(entity, (Object[]) null);
@@ -131,11 +131,9 @@ public class Manager {
 				} else {
 					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 				}
-
 			} catch (Exception e) {
 				// the method could not be accessed throw exception
-				throw new EntityException("Error accessing getter for field '"
-						+ f.getName() + "'");
+				throw new EntityException("Error accessing getter for field '" + f.getName() + "'");
 			}
 			// Add apostrophes if not the last value
 			if (index != fields.length - 2) {
@@ -149,7 +147,7 @@ public class Manager {
 		valsBuilder.append(" ) ");
 		
 		// Append the strings together
-		String outputSql = insertSql.toString() + valsBuilder.toString();
+		insertSql.append(valsBuilder.toString());
 
 		// Get connection to the database
 		Connection dbcon = getConnection();
@@ -158,7 +156,7 @@ public class Manager {
 		Statement stmt = dbcon.createStatement();
 		
 		// Execute the sql on the database
-		stmt.execute(outputSql);
+		stmt.execute(insertSql.toString());
 		
 		// clean up
 		stmt.close();
@@ -168,14 +166,154 @@ public class Manager {
 	/**
 	 * Queries the database using the provided AQL script.
 	 * 
-	 * @param query
-	 *            The query to execute on the database.
+	 * @param query The query to execute on the database.
 	 * @return List of objects that match the provided query.
+	 * @throws AQLException When the provided query is not valid AQL.
+	 * @throws SQLException 
+	 * @throws EntityException 
 	 */
-	public static List<Object> queryDB(String query) {
-		return null;
+	public static List<Object> queryDB(String query) throws AQLException, SQLException, EntityException {
+		
+		// split on white spaces
+		String[] args = query.split(" ");
+		
+		// test that at least 2 words, were provided, the first one is fetch and the second one is a valid entity
+		if(args.length < 2 || !args[0].toLowerCase().equals("fetch") || !isEntity(args[1])){
+			throw new AQLException("Error in fetch statement.");
+		}
+		// Start building the sql string
+		StringBuilder sql = new StringBuilder("SELECT * FROM " + args[1].replace("$","_").replace(".","_"));
+		
+		// If the args is longer than 2 then there are where clauses
+		if(args.length > 2){
+			// Where clause is expected at position 3 in the array
+			if(!args[2].toLowerCase().equals("where")){
+				throw new AQLException("WHERE clause not provided after entity name.");
+			}
+			
+			// If length is equal to 3 then there is no clauases provieded for the where cluase
+			if(args.length == 3){
+				throw new AQLException("No conditions provided for where cluase.");
+			}
+			
+			//TODO write code for where clause
+			
+		}
+		
+		// Get database connection
+		Connection dbcon = getConnection();
+		
+		// Get statement from connection
+		Statement stmt = dbcon.createStatement();
+		
+		System.out.println(sql.toString());
+		
+		// Execute the query
+		ResultSet res = stmt.executeQuery(sql.toString());
+		
+		// Create return list
+		List<Object> resultList = new ArrayList<Object>();
+		
+		// Loop over sql results
+		while(res.next()){
+			
+			// Get the class of the object to persist
+			Class<? extends Object> c;
+			try {
+				c = Class.forName(args[1]);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+			
+			// Create a new instance of the result object
+			Object result;
+			try {
+				result = c.newInstance();
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+			
+			// Get the fields for the class
+			Field[] fields = c.getDeclaredFields();
+			
+			// Loop over the fields adding them to the result object,
+			// ignoring the last field as it is the "this" reference
+			for(int index = 0; index < fields.length - 1; index++){
+				
+				// Get the current field
+				Field f = fields[index];
+				
+				// Split field info on white space
+				String[] info = f.toString().split(" ");
+				
+				// Get type of field
+				String type = info[info.length - 2];
+
+				// Method of the getter for the field
+				Method setter;
+
+				// Attempt to get the setter for the field
+				try {
+					setter = c.getMethod("set" + capitalize(f.getName()), Class.forName(type));
+				} catch (Exception e) {
+					e.printStackTrace();
+					// the method could not be accessed throw exception
+					throw new EntityException("Error accessing setter for field '" + f.getName() + "'");
+				}
+				
+				// Attempt to get the value of the object from the fields getter
+				try {
+					if (type.equals("java.lang.String")) {
+						System.out.println("YOYOY " + res.getString(f.getName()));
+						setter.invoke(result, res.getString(f.getName()));
+
+					} else if (type.equals("int")) {
+						setter.invoke(result, res.getInt(f.getName()));
+					} else if (type.equals("boolean")) {
+						setter.invoke(result, res.getBoolean(f.getName()));
+					} else if (type.equals("double")) {
+						setter.invoke(result, res.getDouble(f.getName()));
+					} else if (type.equals("float")) {
+						setter.invoke(result, res.getFloat(f.getName()));
+					} else if (type.equals("char")) {
+						setter.invoke(result, res.getString(f.getName()).charAt(0));
+					} else {
+						System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
+					}
+				} catch (Exception e) {
+					// the method could not be accessed throw exception
+					throw new EntityException("Error accessing getter for field '" + f.getName() + "'");
+				}
+				
+			}
+			// Add result to result list
+			resultList.add(result);
+		}
+		
+		return resultList;
 	}
 
+	/**
+	 * 
+	 * @param className
+	 * @param awesomeId
+	 * @param field
+	 * @return
+	 */
+	public static Object getField(String className, int awesomeId, String field){
+		
+		
+		return null;
+	}
+	
 	/**
 	 * 
 	 * @param name
@@ -185,6 +323,23 @@ public class Manager {
 		return true;
 	}
 
+	private static Class<? extends Object> mapPrimative(String prim){
+		if(prim.equals("int")){
+			return int.class;
+		}else if(prim.equals("boolean")){
+			return boolean.class;
+		}else if(prim.equals("float")){
+			return float.class;
+		}else if(prim.equals("double")){
+			return double.class;
+		}else if(prim.equals("char")){
+			return char.class;
+		}else{
+			System.out.println("Invalid primative returned '" + prim + "'");
+			return null;
+		}
+	}
+	
 	/**
 	 * Gets a connection to the database provided in the awesome.properties file
 	 * 
@@ -192,8 +347,10 @@ public class Manager {
 	 * @throws SQLException Thrown if a connection to the database cannot be established
 	 */
 	private static Connection getConnection() throws SQLException{
+		
 		// Get url from properties file
 		String url = properties.getProperty("url");
+		
 		// Remove quotations
 		url = url.substring(1, url.length() - 1);
 		
@@ -203,6 +360,7 @@ public class Manager {
 		} catch (ClassNotFoundException e) {
 			throw new SQLException("Unable to connect to database.");
 		}
+		
 	    // Create the connection and return it
 		return DriverManager.getConnection(url);
 	}
@@ -256,7 +414,6 @@ public class Manager {
 				sql.append(", ");
 			}
 			
-			System.out.println("type - " + info[info.length - 2]);
 		}
 		
 		sql.append(")");
@@ -307,8 +464,6 @@ public class Manager {
 		if (res.next())
 			out =  true;
 			
-		System.out.println(out);
-		
 		// clean up
 		stmt.close();
 		dbcon.close();

@@ -9,11 +9,16 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import sun.management.VMManagement;
 import awesome.persistence.entity.Instance;
+import awesome.persistence.manager.EntityException;
+import awesome.persistence.manager.Manager;
+import awesome.persistence.manager.NotAEntity;
+import awesome.persistence.manager.PropertiesException;
 
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
@@ -169,7 +174,9 @@ public abstract class Transformer {
 	
 	
 	public static void main(String[] argv) {
-		Transformer.addTransformer(new LazyInitAgent());
+		LazyInitAgent agent = new LazyInitAgent();
+		agent.addEntity("Instance");
+		Transformer.addTransformer(agent);
 		try {
 			Transformer.startAgent();
 		} catch (AgentException e) {
@@ -178,9 +185,35 @@ public abstract class Transformer {
 		}
 		
 		System.out.println("Agent running: " + Transformer.agentRunning());
+		try {
+			Manager.setProperties("awesome.properties");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (PropertiesException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		Instance inst = new Instance();
-		System.out.println(inst.field);
+		
+		inst.setAwesomeId(1);
+		inst.setField(20);
+		
+		try {
+			Manager.persist(inst);
+		} catch (NotAEntity e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (EntityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//System.out.println(inst.field);
 		System.out.println("Getter: " + inst.getField());
 		System.out.println("Getter: " + inst.getField());
 //		try {
@@ -188,7 +221,7 @@ public abstract class Transformer {
 //		}catch(Exception e) {
 //			e.printStackTrace();
 //		}
-		inst.printAttributes();
+		//inst.printAttributes();
 		
 	}
 }

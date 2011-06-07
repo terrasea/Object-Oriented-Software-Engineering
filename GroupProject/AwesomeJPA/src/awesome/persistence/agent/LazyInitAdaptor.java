@@ -19,6 +19,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 
 	public LazyInitAdaptor(ClassVisitor cv) {
 		super(cv);
+		System.out.println("LazyInitAdaptor");
 	}
 
 	@Override
@@ -26,7 +27,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 			String superName, String[] interfaces) {
 		cv.visit(version, access, name, signature, superName, interfaces);
 		owner = name;
-		isEntity = Manager.isEntity(name);
+		isEntity = true;//Manager.isEntity(name);
 	}
 
 	@Override
@@ -46,9 +47,11 @@ public class LazyInitAdaptor extends ClassAdapter {
 		} else {
 			// transform getters
 			if (isEntity && mv != null && name.startsWith("get")
-					&& isEntityField(name)) {
+					&& isEntityField(name) && !name.endsWith("AwesomeId")) {
 				mv = new LazyInitGetterAdaptor(mv, owner, name,
 						getEntityType(name));
+			} else {
+				System.out.println("Not get or a entity: " + name);
 			}
 		}
 		return mv;

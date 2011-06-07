@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.manager.Manager;
+import awesome.persistence.manager.NotAEntity;
 import awesome.persistence.manager.PropertiesException;
 
 /**
@@ -17,8 +18,10 @@ import awesome.persistence.manager.PropertiesException;
  */
 public class TestManager {
 
+	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/Object-Oriented-Software-Engineering/GroupProject/AwesomeJPA/awesome.properties";
+	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/Object-Oriented-Software-Engineering/GroupProject/AwesomeJPA/awesomeInvalid.properties";
 
-	class Primatives{
+	public class Primatives{
 		@Basic
 		private String pString;
 		@Basic
@@ -86,7 +89,7 @@ public class TestManager {
 	@Test
 	public void testConstructor(){
 		try {
-			Manager.setProperties("awesome.properties");
+			Manager.setProperties(propertiesPath);
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail();
@@ -99,15 +102,25 @@ public class TestManager {
 	@Test(expected=IOException.class)
 	public void testConstructorNoFile() throws IOException, PropertiesException{
 		Manager.setProperties("awesome.propertiesNOFILE");
+		
 	}
 	
 	@Test(expected=PropertiesException.class)
 	public void testConstructorEmptyFile()throws IOException, PropertiesException{
-		Manager.setProperties("awesomeInvalid.properties");
+		Manager.setProperties(invalidPropertiesPath);
 	}
 	
 	@Test
-	public void testPersist(){
+	public void testPersist() throws NotAEntity, IOException, PropertiesException{
+		Manager.setProperties(propertiesPath);
+		Primatives p = new Primatives();
+		p.setPBool(true);
+		p.setPChar('c');
+		p.setPDouble(100.110);
+		p.setPFloat(new Float(0.1));
+		p.setPInt(100);
+		p.setPString("HELLO WORLD");
 		
+		Manager.persist(p);
 	}
 }

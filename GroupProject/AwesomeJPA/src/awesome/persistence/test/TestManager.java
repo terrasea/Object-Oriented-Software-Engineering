@@ -3,9 +3,11 @@ package awesome.persistence.test;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.List;
+
 import org.junit.Test;
 
-import awesome.persistence.annotations.Basic;
+
 import awesome.persistence.manager.Manager;
 import awesome.persistence.manager.PropertiesException;
 
@@ -19,71 +21,6 @@ public class TestManager {
 	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesome.properties";
 	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesomeInvalid.properties";
 
-	public class Primatives{
-		@Basic
-		private String pString;
-		@Basic
-		private int pInt;
-		@Basic
-		private boolean pBool;
-		@Basic
-		private double pDouble;
-		@Basic
-		private float pFloat;
-		@Basic
-		private char pChar;
-		
-		public Primatives(){}
-		
-		public void setPString(String pString){
-			this.pString = pString;
-		}
-		
-		public String getPString(){
-			return this.pString;
-		}
-		
-		public void setPInt(int pInt){
-			this.pInt = pInt;
-		}
-		
-		public int getPInt(){
-			return this.pInt;
-		}
-		
-		public void setPBool(boolean pBool){
-			this.pBool = pBool;
-		}
-		
-		public boolean getPBool(){
-			return this.pBool;
-		}
-		
-		public void setPDouble(double pDouble){
-			this.pDouble = pDouble;
-		}
-		
-		public double getPDouble(){
-			return this.pDouble;
-		}
-		
-		public void setPFloat(float pFloat){
-			this.pFloat = pFloat;
-		}
-		
-		public float getPFloat(){
-			return this.pFloat;
-		}
-		
-		public void setPChar(char pChar){
-			this.pChar = pChar;
-		}
-		
-		public char getPChar(){
-			return this.pChar;
-		}
-	}
-	
 	@Test
 	public void testConstructor(){
 		try {
@@ -120,5 +57,14 @@ public class TestManager {
 		p.setPString("HELLO WORLD");
 		
 		Manager.persist(p);
+
+		List<Object> results = Manager.queryDB("FETCH " + p.getClass().getName());
+		
+		for(int index = 0; index < results.size(); index++){
+			Primatives res = (Primatives) results.get(index);
+			System.out.println(res.getPString());
+		}
+		
+		System.out.println(results.size());
 	}
 }

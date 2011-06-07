@@ -3,11 +3,10 @@ package awesome.persistence.manager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -49,142 +48,121 @@ public class Manager {
 	/**
 	 * Sends an object to the database
 	 * 
-	 * @param entity
-	 *            The entity to store in the database
-	 * @throws NotAEntity
+	 * @param entity The entity to store in the database
+	 * @throws EntityException 
 	 */
-	public static void persist(Object entity) throws SQLException, NotAEntity {
+	public static void persist(Object entity) throws NotAEntity, SQLException, EntityException {
 		// Get the class of the object
 		Class<? extends Object> c = entity.getClass();
 		
 		// Test if the provided class is valid
-		if (isEntity(c.getName())) {
-
-			// Test if table exists
-			String sql = "IF EXISTS(SELECT [awesome_id] FROM " 
-				+ c.getName().replace('$', '_').replace('.','_') 
-				+ ")";
-			
-			// Create table
-			createTable(entity);
-			
-			// Insert into table
-			StringBuilder insertSql = new StringBuilder("INSERT INTO " 
-					+ c.getName().replace('$', '_').replace('.','_')
-					+ "(");
-			
-			StringBuilder valsBuilder = new StringBuilder("VALUES(");
-			// Get list of the declared fields in the class
-			Field[] fields = c.getDeclaredFields();
-			
-			// Loop over all fields and build sql string, not processing last index
-			// Because it is always a reference to itself
-			for(int index = 0; index < fields.length - 1; index++){
-				
-				// Get current field
-				Field f = fields[index];
-				
-				// Add to sql column names
-				insertSql.append(f.getName());
-				
-				// Split field info on white space
-				String[] info = f.toString().split(" ");
-				
-				// Get type of field
-				String type = info[info.length - 2];
-				
-				// Method of the getter for the field
-				Method getter;
-				
-				try {
-					getter = c.getMethod("get" + capitalize(f.getName()), null);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					return;
-				} 
-				
-				if(type.equals("java.lang.String")){
-					try {
-						String s = (String) getter.invoke(entity, null);
-						valsBuilder.append("'" + s + "'");
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-				}else if(type.equals("int")){
-					try {
-						Integer i = (Integer) getter.invoke(entity, null);
-						valsBuilder.append(i.toString());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-				}else if(type.equals("boolean")){
-					try {
-						Boolean b = (Boolean) getter.invoke(entity, null);
-						if(b)
-							valsBuilder.append("1");
-						else
-							valsBuilder.append("0");
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-				}else if(type.equals("double")){
-					try {
-						Double d = (Double) getter.invoke(entity, null);
-						valsBuilder.append(d.toString());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-				}else if(type.equals("float")){
-					try {
-						Float fl = (Float) getter.invoke(entity, null);
-						valsBuilder.append(fl.toString());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-				}else if(type.equals("char")){
-					try {
-						Character ch = (Character) getter.invoke(entity, null);
-						valsBuilder.append("'" + ch.toString() + "'");
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return;
-					}
-				}else{
-					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
-				}
-				
-				if(index != fields.length - 2){
-					valsBuilder.append(", ");
-					insertSql.append(", ");
-				}
-			}
-			insertSql.append(") ");
-			valsBuilder.append(" ) ");
-			
-			String outputSql = insertSql.toString() + valsBuilder.toString();
-			System.out.println("OUT - " + outputSql);
-		} else {
+		if (!isEntity(c.getName())) {
 			throw new NotAEntity("Not in the list of entities to persist");
 		}
-		Connection dbcon;
-		try {
-			dbcon = getConnection();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
+		// Test if a table exists for the entity
+		if(!doesTableExist(c.getName().replace('$', '_').replace('.','_') )){
+			// Create table
+			createTable(entity);				
 		}
+		
+		// Start building sql to insert vals into entity
+		StringBuilder insertSql = new StringBuilder("INSERT INTO " 
+				+ c.getName().replace('$', '_').replace('.','_')
+				+ "(");
+		
+		// Start building the values part of the sql string
+		StringBuilder valsBuilder = new StringBuilder("VALUES(");
+		
+		// Get list of the declared fields in the class
+		Field[] fields = c.getDeclaredFields();
+		
+		// Loop over all fields and build sql string, not processing last index
+		// Because it is always a reference to itself
+		for(int index = 0; index < fields.length - 1; index++){
+			
+			// Get current field
+			Field f = fields[index];
+			
+			// Add to sql column names
+			insertSql.append(f.getName());
+
+			// Split field info on white space
+			String[] info = f.toString().split(" ");
+
+			// Get type of field
+			String type = info[info.length - 2];
+
+			// Method of the getter for the field
+			Method getter;
+
+			// Attempt to get the getter for the field
+			try {
+				getter = c.getMethod("get" + capitalize(f.getName()),
+						(Class<?>[]) null);
+			} catch (Exception e) {
+				// the method could not be accessed throw exception
+				throw new EntityException("Error accessing getter for field '"
+						+ f.getName() + "'");
+			}
+			
+			try {
+				if (type.equals("java.lang.String")) {
+					String s = (String) getter.invoke(entity, (Object[]) null);
+					valsBuilder.append("'" + s + "'");
+				} else if (type.equals("int")) {
+						Integer i = (Integer) getter.invoke(entity, (Object[]) null);
+						valsBuilder.append(i.toString());
+				} else if (type.equals("boolean")) {
+					Boolean b = (Boolean) getter.invoke(entity, (Object[]) null);
+					if (b)
+						valsBuilder.append("1");
+					else
+						valsBuilder.append("0");
+				} else if (type.equals("double")) {
+					Double d = (Double) getter.invoke(entity, (Object[]) null);
+					valsBuilder.append(d.toString());
+				} else if (type.equals("float")) {
+					Float fl = (Float) getter.invoke(entity, (Object[]) null);
+					valsBuilder.append(fl.toString());
+				} else if (type.equals("char")) {
+					Character ch = (Character) getter.invoke(entity, (Object[]) null);
+					valsBuilder.append("'" + ch.toString() + "'");
+				} else {
+					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
+				}
+
+			} catch (Exception e) {
+				// the method could not be accessed throw exception
+				throw new EntityException("Error accessing getter for field '"
+						+ f.getName() + "'");
+			}
+			// Add apostrophes if not the last value
+			if (index != fields.length - 2) {
+				valsBuilder.append(", ");
+				insertSql.append(", ");
+			}
+		}
+		
+		// Finish of sql string
+		insertSql.append(") ");
+		valsBuilder.append(" ) ");
+		
+		// Append the strings together
+		String outputSql = insertSql.toString() + valsBuilder.toString();
+
+		// Get connection to the database
+		Connection dbcon = getConnection();
+
+		// Get a statement from the database connection
+		Statement stmt = dbcon.createStatement();
+		
+		// Execute the sql on the database
+		stmt.execute(outputSql);
+		
+		// clean up
+		stmt.close();
+		dbcon.close();
 	}
 
 	/**
@@ -213,16 +191,20 @@ public class Manager {
 	 * Gets a connection to the database provided in the awesome.properties file
 	 * 
 	 * @return A valid connection to the database
-	 * @throws Exception
-	 *             Thrown if a connection to the database cannot be established
+	 * @throws SQLException Thrown if a connection to the database cannot be established
 	 */
-	private static Connection getConnection() throws Exception {
+	private static Connection getConnection() throws SQLException{
 		// Get url from properties file
 		String url = properties.getProperty("url");
 		// Remove quotations
 		url = url.substring(1, url.length() - 1);
+		
 		// Get the driver class
-	    Class.forName("org.sqlite.JDBC");
+	    try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (ClassNotFoundException e) {
+			throw new SQLException("Unable to connect to database.");
+		}
 	    // Create the connection and return it
 		return DriverManager.getConnection(url);
 	}
@@ -237,9 +219,9 @@ public class Manager {
 		Class<? extends Object> c = entity.getClass();
 		
 		// Start sql string
-		StringBuilder sql = new StringBuilder();
-		sql.append("CREATE TABLE " + c.getName().replace('$', '_').replace('.','_') + " (");
+		StringBuilder sql = new StringBuilder("CREATE TABLE " + c.getName().replace('$', '_').replace('.','_') + " (");
 		sql.append(" awesome_id INTEGER PRIMARY KEY , ");
+		
 		// Get list of the declared fields in the class
 		Field[] fields = c.getDeclaredFields();
 		
@@ -294,8 +276,45 @@ public class Manager {
 		dbcon.close();
 	}
 	
+	/**
+	 * Capitalizes the first character of a given string
+	 * @param s The string to capitalize.
+	 * @return A capitalized version of the the string s.
+	 */
     private static String capitalize(String s) {
         if (s.length() == 0) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
+    
+    /**
+     * Queries the provided sqlite database abd checks if a table for the provided
+     * entity exists.
+     * 
+     * @param tableName The table name to check for
+     * @return True if the table exists, false otherwise.
+     * @throws Exception
+     */
+	private static Boolean doesTableExist(String tableName) throws SQLException {
+		// Get database connection
+		Connection dbcon = getConnection();
+		
+		// Get statement from connection
+		Statement stmt = dbcon.createStatement();
+		
+		// Query database for table
+		ResultSet res = stmt.executeQuery("SELECT name FROM sqlite_master WHERE name='"+ tableName + "'");
+		
+		boolean out = false;
+		// If there is a results then there is already a table
+		if (res.next())
+			out =  true;
+			
+		System.out.println(out);
+		
+		// clean up
+		stmt.close();
+		dbcon.close();
+		
+		return out;
+	}
 }

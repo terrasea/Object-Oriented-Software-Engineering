@@ -3,13 +3,10 @@ package awesome.persistence.test;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.sql.SQLException;
-
 import org.junit.Test;
 
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.manager.Manager;
-import awesome.persistence.manager.NotAEntity;
 import awesome.persistence.manager.PropertiesException;
 
 /**
@@ -112,7 +109,7 @@ public class TestManager {
 	}
 	
 	@Test
-	public void testPersist() throws NotAEntity, IOException, PropertiesException, SQLException{
+	public void testPersist() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);

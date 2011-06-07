@@ -39,12 +39,12 @@ public class Main {
 			Coffee coffee = new Coffee();
 			coffee.setName("Long black");
 			coffee.setStrength(5);
-			coffee.setMilk(false);
+			coffee.setMilk(0);
 			
 			Tea tea = new Tea();
 			tea.setName("Earl gray");
 			tea.setStrength(4);
-			tea.setMilk(true);
+			tea.setMilk(1);
 			
 			
 			Manager.persist(coffee);

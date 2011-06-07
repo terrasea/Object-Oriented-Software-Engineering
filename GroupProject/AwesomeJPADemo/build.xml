@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<project name="AwesomeJPA" default="compile">
+<project name="AwesomeJPADemo" default="compile">
 
 	<property name="src.dir" value="src" />
 	<property name="build.dir" value="build" />
@@ -12,7 +12,7 @@
 	<property name="agent.main" value="awesome.persistence.agent.Transformer" />
 	<property name="agent.premain" value="awesome.persistence.agent.Transformer" />
 	<property name="agent.agentmain" value="awesome.persistence.agent.Transformer" />
-	<property name="jar.classpath" value="${lib.dir}/asm-4.0_RC1.jar ${lib.dir}/sqlitejdbc-v056.jar ${java.home}/../lib/tools.jar ${lib.dir}/sqlitejdbc-v056.jar" />
+	<property name="jar.classpath" value="${lib.dir}/AwesomeJPA.jar ${lib.dir}/asm-4.0_RC1.jar ${lib.dir}/sqlitejdbc-v056.jar ${java.home}/../lib/tools.jar ${lib.dir}/sqlitejdbc-v056.jar" />
 
 	<path id="project.class.path">
 		<fileset dir="${lib.dir}">

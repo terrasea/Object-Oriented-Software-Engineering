@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<project name="AwesomeJPADemo" default="compile">
+<project name="AwesomeJPA" default="compile">
 
 	<property name="src.dir" value="src" />
 	<property name="build.dir" value="build" />

@@ -124,7 +124,7 @@ public abstract class Transformer {
 
 	private static final String CLASS_PATH = System.getProperty("java.class.path");
 
-	private static final String INSTR_JAR_NAME = "AwesomeJPA";
+	private static final String INSTR_JAR_NAME = "AwesomeJPA.jar";
 
 	private static final String OS_NAME = System.getProperty("os.name");
 
@@ -137,7 +137,7 @@ public abstract class Transformer {
 				String agentPath = null;
 				for (String entry : CLASS_PATH.split(splitter)) {
 					System.out.println("Entry: " + entry);
-					if (entry.toLowerCase().startsWith(INSTR_JAR_NAME.toLowerCase())) {
+					if (entry.toLowerCase().endsWith(INSTR_JAR_NAME.toLowerCase())) {
 						agentPath = entry;
 						break;
 					}

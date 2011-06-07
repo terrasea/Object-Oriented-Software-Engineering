@@ -47,7 +47,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 		} else {
 			// transform getters
 			if (isEntity && mv != null && name.startsWith("get")
-					&& isEntityField(name) && !name.endsWith("AwesomeId")) {
+					 && !name.endsWith("AwesomeId")) {
 				mv = new LazyInitGetterAdaptor(mv, owner, name,
 						getEntityType(name));
 			} else {

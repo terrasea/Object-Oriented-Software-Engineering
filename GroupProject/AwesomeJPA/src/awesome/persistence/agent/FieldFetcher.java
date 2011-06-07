@@ -17,20 +17,23 @@ public class FieldFetcher {
 		Type type = fieldID.getType();
 		tmpArray = type.toString().split("\\.");
 		String typeDesc = tmpArray[tmpArray.length - 1];
-		if (typeDesc.matches("(int)|(long)|(Integer)|(Long)")) {
-			List<Object> obj = Manager.queryDB(String.format("SELECT %s FROM %s WHERE %s = %s",
-					field, table, "id", klass.getClass().getDeclaredMethod("getId").invoke(klass)));
-			if(obj != null) {
-				fieldID.set(klass, obj.get(0));
-			}
-		} else if (typeDesc.matches("(double)|(float)|(Double)|(Float)")) {
-			System.out.println("Fetch double or float");
-		} else if (typeDesc.matches("(boolean)|(Boolean)")) {
-			System.out.println("Fetch boolean");
-
-		} else if (typeDesc.matches("String")) {
-
-		}
+		int awesomeId = (Integer) klass.getClass().getDeclaredMethod("getId").invoke(klass);
+		Object value = Manager.getField(table, awesomeId, field);
+		klass.getClass().getDeclaredMethod("set"+ field.substring(0, 1).toUpperCase() + field.substring(1), Class.forName(type.toString())).invoke(klass, value);
+//		if (typeDesc.matches("(int)|(long)|(Integer)|(Long)")) {
+//			List<Object> obj = Manager.queryDB(String.format("SELECT %s FROM %s WHERE %s = %s",
+//					field, table, "id", ));
+//			if(obj != null) {
+//				fieldID.set(klass, obj.get(0));
+//			}
+//		} else if (typeDesc.matches("(double)|(float)|(Double)|(Float)")) {
+//			System.out.println("Fetch double or float");
+//		} else if (typeDesc.matches("(boolean)|(Boolean)")) {
+//			System.out.println("Fetch boolean");
+//
+//		} else if (typeDesc.matches("String")) {
+//
+//		}
 
 		System.out.println("FieldFetcher: " + fieldID.get(klass) + ", "
 				+ fieldID.getType() + ", " + typeDesc);

@@ -27,12 +27,12 @@ public class LazyInitAgent implements ClassFileTransformer {
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] b) throws IllegalClassFormatException {
-		System.out.println("Lazy Init Agent " + className);// + Manager.isEntity(className));
+		
 		ClassReader cr = new ClassReader(b);
 		ClassWriter cw = new ClassWriter(cr, 0);
 		String[] tmp = className.split("/");
 		if( entities.contains(tmp[tmp.length-1]) ) {
-			
+			System.out.println("Lazy Init Agent " + className);// + Manager.isEntity(className));
 			cr.accept(new LazyInitAdaptor(cw), 0);
 			return cw.toByteArray();
 		}

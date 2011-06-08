@@ -27,6 +27,8 @@ public class TestManager {
 
 	@Test
 	public void testConstructor(){
+		System.out.println(Primatives.class.getName());
+		System.out.println(Complex.class.getName());
 		try {
 			Manager.setProperties(propertiesPath);
 		} catch (IOException e) {
@@ -115,5 +117,23 @@ public class TestManager {
 		Manager.persist(p);
 		
 		Assert.assertTrue(Manager.deleteFromDb(p.getClass().getName(), 1));
+	}
+	
+	@Test
+	public void testComplexObject() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
+		Manager.setProperties(propertiesPath);
+		Primatives p = new Primatives();
+		p.setPBool(true);
+		p.setPChar('c');
+		p.setPDouble(100.110);
+		p.setPFloat(new Float(0.1));
+		p.setPInt(100);
+		p.setPString("HELLO WORLD");
+		
+		Complex c = new Complex();
+		c.setPrim(p);
+		c.setMyString("HELLO ALL");
+		c.setMyInt(100);
+		Manager.persist(c);
 	}
 }

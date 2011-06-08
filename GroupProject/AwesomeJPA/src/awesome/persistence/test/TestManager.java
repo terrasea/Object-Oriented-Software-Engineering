@@ -1,14 +1,18 @@
 package awesome.persistence.test;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 
+import awesome.persistence.manager.EntityException;
 import awesome.persistence.manager.Manager;
+import awesome.persistence.manager.NotAEntity;
 import awesome.persistence.manager.PropertiesException;
 
 /**
@@ -45,7 +49,7 @@ public class TestManager {
 		Manager.setProperties(invalidPropertiesPath);
 	}
 	
-	@Test
+	//@Test
 	public void testPersist() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
@@ -66,5 +70,34 @@ public class TestManager {
 		}
 		
 		System.out.println(results.size());
+	}
+	
+	@Test
+	public void testGetField() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
+		Manager.setProperties(propertiesPath);
+		Primatives p = new Primatives();
+		p.setPBool(true);
+		p.setPChar('c');
+		p.setPDouble(100.110);
+		p.setPFloat(new Float(0.1));
+		p.setPInt(100);
+		p.setPString("HELLO WORLD");
+		
+		Manager.persist(p);
+		
+		String s = (String) Manager.getField(p.getClass().getName(), 1, "pString");
+		Assert.assertTrue(s.equals("HELLO WORLD"));
+		
+		int i = (Integer) Manager.getField(p.getClass().getName(), 1, "pInt");
+		Assert.assertTrue(i == 100);
+		
+		boolean b = (Boolean) Manager.getField(p.getClass().getName(), 1, "pBool");
+		Assert.assertTrue(b);
+		
+		double d = (Double) Manager.getField(p.getClass().getName(), 1, "pDouble");
+		Assert.assertTrue(d == 100.11);
+		
+		float f = (Float) Manager.getField(p.getClass().getName(), 1, "pFloat");
+		Assert.assertTrue(f == new Float(0.1));
 	}
 }

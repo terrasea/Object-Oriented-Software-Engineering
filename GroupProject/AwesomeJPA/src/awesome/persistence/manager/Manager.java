@@ -181,6 +181,7 @@ public class Manager {
 		if(args.length < 2 || !args[0].toLowerCase().equals("fetch") || !isEntity(args[1])){
 			throw new AQLException("Error in fetch statement.");
 		}
+		
 		// Start building the sql string
 		StringBuilder sql = new StringBuilder("SELECT * FROM " + args[1].replace("$","_").replace(".","_"));
 		
@@ -307,9 +308,73 @@ public class Manager {
 	 * @param awesomeId
 	 * @param field
 	 * @return
+	 * @throws SQLException 
+	 * @throws EntityException 
 	 */
-	public static Object getField(String className, int awesomeId, String field){
+	public static Object getField(String className, int awesomeId, String field) throws SQLException, EntityException{
+		// Create SQL
+		String sql = "SELECT awesome_id, " + field + " FROM " + className.replace(".","_") + " WHERE awesome_id = " + awesomeId;
+
+		// Get database connection
+		Connection dbcon = getConnection();
 		
+		// Get statement from the database connection
+		Statement stmt = dbcon.createStatement();
+		
+		// Execute the query on the database
+		ResultSet res =  stmt.executeQuery(sql);
+		
+		// If there is no result, return null
+		if(!res.next()){
+			return null;
+		}
+		
+		Class<? extends Object> c;
+		
+		// Get the class of the object
+		try {
+			c = Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		
+		// Get list of fields
+		Field[] fields = c.getDeclaredFields();
+		
+		// Iterate over the fields until the right field is found
+		for(int index = 0; index < fields.length; index++){
+			Field f = fields[index];
+			
+			if(f.getName().equals(field)){
+				
+				// Split field info on white space
+				String[] info = f.toString().split(" ");
+
+				// Get type of field
+				String type = info[info.length - 2];
+				
+				// Switch for field type
+				if (type.equals("java.lang.String")) {
+					return res.getString(field);
+				} else if (type.equals("int")) {
+					return res.getInt(field);
+				} else if (type.equals("boolean")) {
+					return res.getBoolean(field);
+				} else if (type.equals("double")) {
+					return res.getDouble(field);
+				} else if (type.equals("float")) {
+					return res.getFloat(field);
+				} else if (type.equals("char")) {
+					return res.getString(field).charAt(0);
+				} else {
+					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
+				}
+				
+				return null;
+			}
+		}
 		
 		return null;
 	}

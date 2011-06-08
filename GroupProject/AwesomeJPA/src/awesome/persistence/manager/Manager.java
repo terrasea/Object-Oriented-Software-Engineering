@@ -183,7 +183,7 @@ public class Manager {
 		}
 		
 		// Start building the sql string
-		StringBuilder sql = new StringBuilder("SELECT * FROM " + args[1].replace("$","_").replace(".","_"));
+		StringBuilder sql = new StringBuilder("SELECT awesome_id FROM " + args[1].replace("$","_").replace(".","_"));
 		
 		// If the args is longer than 2 then there are where clauses
 		if(args.length > 2){
@@ -192,13 +192,16 @@ public class Manager {
 				throw new AQLException("WHERE clause not provided after entity name.");
 			}
 			
-			// If length is equal to 3 then there is no clauases provieded for the where cluase
+			// If length is equal to 3 then there is no clauses provided for the where clause
 			if(args.length == 3){
 				throw new AQLException("No conditions provided for where cluase.");
 			}
 			
-			//TODO write code for where clause
-			
+			// Build up the where clauses
+			sql.append(" WHERE ");
+			for(int index = 3; index < args.length; index++){
+				sql.append(" " + args[index]);
+			}
 		}
 		
 		// Get database connection
@@ -223,93 +226,64 @@ public class Manager {
 			try {
 				c = Class.forName(args[1]);
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
+				//Clean up 
+				stmt.close();
+				dbcon.close();
+				throw new EntityException("Could not find class " + args[1]);
 			}
 			
 			// Create a new instance of the result object
 			Object result;
 			try {
 				result = c.newInstance();
-			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
+			} catch (Exception e) {
+				//Clean up 
+				stmt.close();
+				dbcon.close();
+				throw new EntityException("Could not instanciate class " + args[1]);
 			}
 			
-			// Get the fields for the class
-			Field[] fields = c.getDeclaredFields();
-			
-			// Loop over the fields adding them to the result object,
-			// ignoring the last field as it is the "this" reference
-			for(int index = 0; index < fields.length - 1; index++){
-				
-				// Get the current field
-				Field f = fields[index];
-				
-				// Split field info on white space
-				String[] info = f.toString().split(" ");
-				
-				// Get type of field
-				String type = info[info.length - 2];
+			// Method of the getter for the field
+			Method setter;
 
-				// Method of the getter for the field
-				Method setter;
-
-				// Attempt to get the setter for the field
-				try {
-					setter = c.getMethod("set" + capitalize(f.getName()), Class.forName(type));
-				} catch (Exception e) {
-					e.printStackTrace();
-					// the method could not be accessed throw exception
-					throw new EntityException("Error accessing setter for field '" + f.getName() + "'");
-				}
-				
-				// Attempt to get the value of the object from the fields getter
-				try {
-					if (type.equals("java.lang.String")) {
-						System.out.println("YOYOY " + res.getString(f.getName()));
-						setter.invoke(result, res.getString(f.getName()));
-
-					} else if (type.equals("int")) {
-						setter.invoke(result, res.getInt(f.getName()));
-					} else if (type.equals("boolean")) {
-						setter.invoke(result, res.getBoolean(f.getName()));
-					} else if (type.equals("double")) {
-						setter.invoke(result, res.getDouble(f.getName()));
-					} else if (type.equals("float")) {
-						setter.invoke(result, res.getFloat(f.getName()));
-					} else if (type.equals("char")) {
-						setter.invoke(result, res.getString(f.getName()).charAt(0));
-					} else {
-						System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
-					}
-				} catch (Exception e) {
-					// the method could not be accessed throw exception
-					throw new EntityException("Error accessing getter for field '" + f.getName() + "'");
-				}
-				
+			// Attempt to get the setter for the field
+			try {
+				setter = c.getMethod("setAwesomeId", Integer.class);
+			} catch (Exception e) {
+				e.printStackTrace();
+				//Clean up 
+				stmt.close();
+				dbcon.close();
+				// the method could not be accessed throw exception
+				throw new EntityException("Error accessing setter for field 'AwesomeId'");
 			}
+			
+			try {
+				setter.invoke(result, res.getInt("awesome_id"));
+			} catch (Exception e) {
+				//Clean up 
+				stmt.close();
+				dbcon.close();
+				throw new EntityException("Unable to set awesomeId for result object id = " + res.getInt("awesome_id"));
+			}
+
 			// Add result to result list
 			resultList.add(result);
 		}
 		
+		// return results
 		return resultList;
 	}
 
 	/**
+	 * Gets a individual field for an object from the database.
 	 * 
-	 * @param className
-	 * @param awesomeId
-	 * @param field
-	 * @return
-	 * @throws SQLException 
-	 * @throws EntityException 
+	 * @param className The class name the field is for, used to lookup correct table.
+	 * @param awesomeId The awesome_id of the object in the database
+	 * @param field The field name to get
+	 * @return The field for the object
+	 * @throws SQLException If an error occurred when interacting with the database
+	 * @throws EntityException If there was an error processing the entity
 	 */
 	public static Object getField(String className, int awesomeId, String field) throws SQLException, EntityException{
 		// Create SQL
@@ -326,6 +300,9 @@ public class Manager {
 		
 		// If there is no result, return null
 		if(!res.next()){
+			// Clean up
+			stmt.close();
+			dbcon.close();
 			return null;
 		}
 		
@@ -335,10 +312,13 @@ public class Manager {
 		try {
 			c = Class.forName(className);
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// Clean up
+			stmt.close();
+			dbcon.close();
 			return null;
 		}
+		
+		Object out = null;
 		
 		// Get list of fields
 		Field[] fields = c.getDeclaredFields();
@@ -357,30 +337,33 @@ public class Manager {
 				
 				// Switch for field type
 				if (type.equals("java.lang.String")) {
-					return res.getString(field);
+					out = res.getString(field);
 				} else if (type.equals("int")) {
-					return res.getInt(field);
+					out = res.getInt(field);
 				} else if (type.equals("boolean")) {
-					return res.getBoolean(field);
+					out = res.getBoolean(field);
 				} else if (type.equals("double")) {
-					return res.getDouble(field);
+					out = res.getDouble(field);
 				} else if (type.equals("float")) {
-					return res.getFloat(field);
+					out = res.getFloat(field);
 				} else if (type.equals("char")) {
-					return res.getString(field).charAt(0);
+					out = res.getString(field).charAt(0);
 				} else {
 					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 				}
 				
-				return null;
+				// field found exit loop
+				break;
 			}
 		}
-		
-		return null;
+		// Clean up
+		stmt.close();
+		dbcon.close();
+		return out;
 	}
 	
 	/**
-	 * 
+	 * Tests if the given class name is a valid entity
 	 * @param name
 	 * @return
 	 */
@@ -388,21 +371,35 @@ public class Manager {
 		return true;
 	}
 
-	private static Class<? extends Object> mapPrimative(String prim){
-		if(prim.equals("int")){
-			return int.class;
-		}else if(prim.equals("boolean")){
-			return boolean.class;
-		}else if(prim.equals("float")){
-			return float.class;
-		}else if(prim.equals("double")){
-			return double.class;
-		}else if(prim.equals("char")){
-			return char.class;
-		}else{
-			System.out.println("Invalid primative returned '" + prim + "'");
-			return null;
+	/**
+	 * Deletes an object from the database
+	 * @param className The table to delete from.
+	 * @param awesomeId The id to delete from the table
+	 * @return True if the operation succeeded, false otherwise
+	 * @throws SQLException If the operation was unsuccessful
+	 */
+	public static boolean deleteFromDb(String className, int awesomeId) throws SQLException{
+		// If there is no table then no deletion can be performed
+		if(doesTableExist(className)){
+			return false;
 		}
+		
+		// Build the sql string
+		String sql = "DELETE FROM " + className.replace(".","_") + " WHERE awesome_id = " + awesomeId;
+		System.out.println(sql);
+		// Get connection to the database
+		Connection dbcon = getConnection();
+		
+		// Get statement from the connection
+		Statement stmt = dbcon.createStatement();
+		
+		// Execute the sql
+		stmt.execute(sql);
+		
+		// clean up
+		stmt.close();
+		dbcon.close();
+		return true;
 	}
 	
 	/**

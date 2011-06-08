@@ -186,7 +186,7 @@ public abstract class Transformer {
 		
 		System.out.println("Agent running: " + Transformer.agentRunning());
 		try {
-			Manager.setProperties("awesome.properties");
+			Manager.setProperties("lib/awesome.properties");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -215,7 +215,7 @@ public abstract class Transformer {
 		
 		//System.out.println(inst.field);
 		System.out.println("Getter: " + inst.getField());
-		System.out.println("Getter: " + inst.getField());
+		//System.out.println("Getter: " + inst.getField());
 //		try {
 //			FieldFetcher.get(inst, "field");
 //		}catch(Exception e) {

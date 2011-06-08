@@ -19,7 +19,6 @@ public class LazyInitAdaptor extends ClassAdapter {
 
 	public LazyInitAdaptor(ClassVisitor cv) {
 		super(cv);
-		System.out.println("LazyInitAdaptor");
 	}
 
 	@Override
@@ -43,15 +42,14 @@ public class LazyInitAdaptor extends ClassAdapter {
 		MethodVisitor mv = cv.visitMethod(access, name, desc, signature,
 				exceptions);
 		if (isEntity && mv != null && name.equals("<init>")) {
-			mv = new LazyInitMethodAdapter(mv, owner, 0);
+			mv = new LazyInitMethodAdapter(mv, owner);
 		} else {
 			// transform getters
 			if (isEntity && mv != null && name.startsWith("get")
 					 && !name.endsWith("AwesomeId")) {
-				mv = new LazyInitGetterAdaptor(mv, owner, name,
-						getEntityType(name));
+				mv = new LazyInitGetterAdaptor(mv, owner, name);
 			} else {
-				System.out.println("Not get or a entity: " + name);
+				//System.out.println("Not get or a entity: " + name);
 			}
 		}
 		return mv;
@@ -61,9 +59,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 		return "Ljava/lang/Integer;";
 	}
 
-	private boolean isEntityField(String name) {
-		return name.equals("getField");
-	}
+	
 
 	@Override
 	public void visitEnd() {
@@ -89,8 +85,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 		 * @param name
 		 *            - the fully qualified name of the class being transformed
 		 */
-		public LazyInitMethodAdapter(MethodVisitor mv, String name,
-				int nextPosition) {
+		public LazyInitMethodAdapter(MethodVisitor mv, String name) {
 			super(mv);
 			owner = name;
 		}
@@ -129,16 +124,14 @@ public class LazyInitAdaptor extends ClassAdapter {
 
 		private String className;
 		private String fieldName;
-		private String fieldType;
 
 		public LazyInitGetterAdaptor(MethodVisitor arg0, String className,
-				String methodName, String fieldType) {
+				String methodName) {
 			super(arg0);
 			this.className = className;
 			this.fieldName = String.format("%s%s", String.format("%c",
 					methodName.charAt(3)).toLowerCase(), methodName
 					.substring(4));
-			this.fieldType = fieldType;
 		}
 
 		@Override
@@ -150,7 +143,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 			mv.visitTryCatchBlock(l0, l1, l2, "java/lang/Exception");
 			mv.visitVarInsn(Opcodes.ALOAD, 0);
 			mv.visitFieldInsn(Opcodes.GETFIELD,
-					"awesome/persistence/entity/Instance", "fields",
+					className, "fields",
 					"Ljava/util/HashSet;");
 			mv.visitLdcInsn(fieldName);
 			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/HashSet",
@@ -159,7 +152,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 			mv.visitJumpInsn(Opcodes.IFNE, l3);
 			mv.visitVarInsn(Opcodes.ALOAD, 0);
 			mv.visitFieldInsn(Opcodes.GETFIELD,
-					"awesome/persistence/entity/Instance", "fields",
+					className, "fields",
 					"Ljava/util/HashSet;");
 			mv.visitLdcInsn(fieldName);
 			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/HashSet",

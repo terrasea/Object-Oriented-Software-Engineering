@@ -39,7 +39,7 @@ public class Main {
 			Coffee coffee = new Coffee();
 			coffee.setName("Long black");
 			coffee.setStrength(5);
-			coffee.setMilk(0);
+			//coffee.setMilk(0);
 			
 			Tea tea = new Tea();
 			tea.setName("Earl gray");

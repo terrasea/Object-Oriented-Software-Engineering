@@ -41,15 +41,15 @@ public class Coffee {
 	}
 	
 	
-	@Basic
-	int milk;
-	
-	public int getMilk() {
-		return milk;
-	}
-	
-	
-	public void setMilk(int milk) {
-		this.milk = milk;
-	}
+//	@Basic
+//	int milk;
+//	
+//	public int getMilk() {
+//		return milk;
+//	}
+//	
+//	
+//	public void setMilk(int milk) {
+//		this.milk = milk;
+//	}
 }

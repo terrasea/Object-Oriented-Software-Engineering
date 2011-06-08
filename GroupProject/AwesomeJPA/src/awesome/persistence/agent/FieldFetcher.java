@@ -24,10 +24,6 @@ public class FieldFetcher {
 		fieldID.setAccessible(true);
 		if(value != null) {
 			fieldID.set(klass, value);
-		} else {
-			fieldID.set(klass, -1);
-		}
-		System.out.println("FieldFetcher: " + fieldID.get(klass) + ", "
-				+ fieldID.getType() + ", " + typeDesc);
+		} 
 	}
 }

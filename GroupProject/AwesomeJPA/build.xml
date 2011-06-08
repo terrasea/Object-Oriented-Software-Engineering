@@ -9,7 +9,7 @@
 	<property name="jar.lib.dir" value="jar/lib" />
 
 	<!-- Main, Premain and Agentmain Classes defined here -->
-	<property name="agent.main" value="main.Main" />
+	<property name="agent.main" value="awesome.persistence.agent.Transformer" />
 	<property name="agent.premain" value="awesome.persistence.agent.Transformer" />
 	<property name="agent.agentmain" value="awesome.persistence.agent.Transformer" />
 	<property name="jar.classpath" value="${lib.dir}/asm-4.0_RC1.jar ${lib.dir}/sqlitejdbc-v056.jar ${java.home}/../lib/tools.jar ${lib.dir}/sqlitejdbc-v056.jar AwesomeJPA.jar" />

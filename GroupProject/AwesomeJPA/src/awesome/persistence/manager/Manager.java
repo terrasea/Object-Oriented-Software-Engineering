@@ -38,8 +38,7 @@ public class Manager {
 		properties.load(new FileInputStream(propertiesPath));
 
 		// Check the required properties are provided
-		if (!properties.containsKey("user")
-				&& !properties.containsKey("password")
+		if (!properties.containsKey("entities")
 				&& !properties.containsKey("url")) {
 			// Invalid properties file, throw exception
 			throw new PropertiesException("Invalid properties file provided.");
@@ -57,8 +56,8 @@ public class Manager {
 		Class<? extends Object> c = entity.getClass();
 		
 		// Test if the provided class is valid
-		if (!isEntity(c.getName())) {
-			throw new NotAEntity("Not in the list of entities to persist");
+		if (!isEntity(entity)) {
+			throw new NotAEntity("Not in the list of entities to persist - " + entity.getClass().getName());
 		}
 		
 		// Test if a table exists for the entity
@@ -367,8 +366,25 @@ public class Manager {
 	 * @param name
 	 * @return
 	 */
-	public static boolean isEntity(String name) {
-		return true;
+	public static boolean isEntity(Object entity) {
+		// Get entities string from properties
+		String ent = properties.getProperty("entities");
+		
+		// Split on white space
+		String[] list = ent.split(";");
+		
+		// Get entity class name
+		String className = entity.getClass().getName();
+		
+		// loop over and check if the object name is contained in the entities list
+		for(int index = 0; index < list.length; index++){
+			// Test if equal, if so return true
+			if(list[index].equals(className))
+				return true;
+		}
+		
+		// Entity not provided in properties file
+		return false;
 	}
 
 	/**
@@ -412,9 +428,6 @@ public class Manager {
 		
 		// Get url from properties file
 		String url = properties.getProperty("url");
-		
-		// Remove quotations
-		url = url.substring(1, url.length() - 1);
 		
 		// Get the driver class
 	    try {
@@ -475,7 +488,6 @@ public class Manager {
 			if(index != fields.length - 2){
 				sql.append(", ");
 			}
-			
 		}
 		
 		sql.append(")");
@@ -499,7 +511,10 @@ public class Manager {
 	 * @return A capitalized version of the the string s.
 	 */
     private static String capitalize(String s) {
+    	// String empty, return s
         if (s.length() == 0) return s;
+        
+        // Capitalize first char and return
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
     
@@ -521,8 +536,10 @@ public class Manager {
 		// Query database for table
 		ResultSet res = stmt.executeQuery("SELECT name FROM sqlite_master WHERE name='"+ tableName + "'");
 		
+		// result
 		boolean out = false;
-		// If there is a results then there is already a table
+		
+		// If there is a result then there is already a table
 		if (res.next())
 			out =  true;
 			

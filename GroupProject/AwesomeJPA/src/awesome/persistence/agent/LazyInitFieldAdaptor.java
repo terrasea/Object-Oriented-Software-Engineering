@@ -10,7 +10,6 @@ public class LazyInitFieldAdaptor implements FieldVisitor {
 	
 	public LazyInitFieldAdaptor(FieldVisitor fv) {
 		this.fv = fv;
-		System.out.println("LazyInitFieldAdaptor");
 	}
 	
 	@Override
@@ -20,7 +19,6 @@ public class LazyInitFieldAdaptor implements FieldVisitor {
 
 	@Override
 	public void visitAttribute(Attribute attr) {
-		System.out.println("Field adaptor - Attribute: " + attr);
 		fv.visitAttribute(attr);
 	}
 

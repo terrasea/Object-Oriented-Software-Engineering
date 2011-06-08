@@ -3,6 +3,9 @@ package awesome.persistence.entity;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 
+import awesome.persistence.agent.FieldFetcher;
+
+
 
 public class Instance {
 	//HashSet<String> fields = new HashSet<String>();
@@ -11,10 +14,11 @@ public class Instance {
 		
 	}
 	
-	public int field = 0;
+	public Integer field = 0;
 	
 	
-	public int getField() {
+	public Integer getField() {
+		
 		return field;
 	}
 	

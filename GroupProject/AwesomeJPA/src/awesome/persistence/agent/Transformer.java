@@ -181,7 +181,13 @@ public abstract class Transformer {
 		
 		Instance inst = new Instance();
 		System.out.println(inst.field);
-		System.out.println(inst.getField());
+		System.out.println("Getter: " + inst.getField());
+		System.out.println("Getter: " + inst.getField());
+//		try {
+//			FieldFetcher.get(inst, "field");
+//		}catch(Exception e) {
+//			e.printStackTrace();
+//		}
 		inst.printAttributes();
 		
 	}

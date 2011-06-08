@@ -320,7 +320,6 @@ public class Manager {
 	 * @return
 	 */
 	public static boolean isEntity(String name) {
-		System.out.println("isEntity: " + name);
 		return true;
 	}
 

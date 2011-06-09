@@ -1,18 +1,25 @@
 package awesome.persistence.test;
 
 import awesome.persistence.annotations.Basic;
+import awesome.persistence.annotations.ID;
 
 public class Primatives {
 	@Basic
 	private String pString;
+	
 	@Basic
+	@ID
 	private int pInt;
+	
 	@Basic
 	private boolean pBool;
+	
 	@Basic
 	private double pDouble;
+	
 	@Basic
 	private float pFloat;
+	
 	@Basic
 	private char pChar;
 	

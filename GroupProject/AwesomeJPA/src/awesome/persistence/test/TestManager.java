@@ -2,11 +2,13 @@ package awesome.persistence.test;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -25,6 +27,23 @@ public class TestManager {
 	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesome.properties";
 	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesomeInvalid.properties";
 
+	@Before
+	public void setUp(){
+		File f = new File("test.db");
+		
+		while(f.exists()){
+			f.delete();
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
+	}
+	
 	@Test
 	public void testConstructor(){
 		System.out.println(Primatives.class.getName());
@@ -51,7 +70,7 @@ public class TestManager {
 		Manager.setProperties(invalidPropertiesPath);
 	}
 	
-	//@Test
+	@Test
 	public void testPersist() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
@@ -82,7 +101,7 @@ public class TestManager {
 		p.setPChar('c');
 		p.setPDouble(100.110);
 		p.setPFloat(new Float(0.1));
-		p.setPInt(100);
+		p.setPInt(1);
 		p.setPString("HELLO WORLD");
 		
 		Manager.persist(p);
@@ -91,7 +110,7 @@ public class TestManager {
 		Assert.assertTrue(s.equals("HELLO WORLD"));
 		
 		int i = (Integer) Manager.getField(p.getClass().getName(), 1, "pInt");
-		Assert.assertTrue(i == 100);
+		Assert.assertTrue(i == 1);
 		
 		boolean b = (Boolean) Manager.getField(p.getClass().getName(), 1, "pBool");
 		Assert.assertTrue(b);
@@ -116,7 +135,7 @@ public class TestManager {
 		
 		Manager.persist(p);
 		
-		Assert.assertTrue(Manager.deleteFromDb(p.getClass().getName(), 1));
+		Assert.assertTrue(Manager.deleteFromDb(p));
 	}
 	
 	@Test

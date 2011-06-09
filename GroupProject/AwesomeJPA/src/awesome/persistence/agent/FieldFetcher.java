@@ -2,28 +2,39 @@ package awesome.persistence.agent;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.List;
 
+import awesome.persistence.annotations.ID;
+import awesome.persistence.manager.EntityException;
 import awesome.persistence.manager.Manager;
 
 public class FieldFetcher {
 	public static <C> void set(C klass, String field) throws Exception {
 		Field fieldID = klass.getClass().getDeclaredField(field);
-		String table = klass.getClass().getName().replace('$', '_').replace('.','_');
+		String table = klass.getClass().getName();//.replace('$', '_').replace('.','_');
 		//String table = tmpArray[tmpArray.length - 1];
-		Type type = fieldID.getType();
+		//Type type = fieldID.getType();
 		
-		String[] tmpArray = type.toString().split("\\.");
-		String typeDesc = tmpArray[tmpArray.length - 1];
-		int awesomeId = (Integer) klass.getClass().getDeclaredMethod(
-				"getAwesomeId").invoke(klass);
-		Object value = Manager.getField(table, awesomeId, field);
+		//String[] tmpArray = type.toString().split("\\.");
+		//String typeDesc = tmpArray[tmpArray.length - 1];
+		Field[] fields = klass.getClass().getDeclaredFields();
+		Object id = null;
+		for(Field f : fields) {
+			if(f.isAnnotationPresent(ID.class)) {
+				f.setAccessible(true);
+				id = f.get(klass);
+			}
+		}
+		
+		if (id == null) {
+			throw new EntityException("No id for entity present");
+		}
+		Object value = Manager.getField(table, (Integer) id, field);
 		fieldID.setAccessible(true);
 		if(value != null) {
 			fieldID.set(klass, value);
-		} 
+		} else {
+//		System.out.println("FieldFetcher: " + fieldID.get(klass) + ", "
+//				+ fieldID.getType() + ", " + value);
+		}
 	}
 }

@@ -1,8 +1,10 @@
 package entity;
 
 import awesome.persistence.annotations.Basic;
+import awesome.persistence.annotations.ID;
 
 public class Coffee {
+	@ID
 	@Basic
 	private int awesomeId;
 	
@@ -15,6 +17,7 @@ public class Coffee {
 	public int getAwesomeId() {
 		return awesomeId;
 	}
+	
 	
 	@Basic
 	private String name;
@@ -41,15 +44,15 @@ public class Coffee {
 	}
 	
 	
-//	@Basic
-//	int milk;
-//	
-//	public int getMilk() {
-//		return milk;
-//	}
-//	
-//	
-//	public void setMilk(int milk) {
-//		this.milk = milk;
-//	}
+	@Basic
+	boolean milk;
+	
+	public boolean getMilk() {
+		return milk;
+	}
+	
+	
+	public void setMilk(boolean milk) {
+		this.milk = milk;
+	}
 }

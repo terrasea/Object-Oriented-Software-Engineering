@@ -39,12 +39,12 @@ public class Main {
 			Coffee coffee = new Coffee();
 			coffee.setName("Long black");
 			coffee.setStrength(5);
-			//coffee.setMilk(0);
+			coffee.setMilk(true);
 			
 			Tea tea = new Tea();
 			tea.setName("Earl gray");
 			tea.setStrength(4);
-			tea.setMilk(1);
+			tea.setMilk(true);
 			
 			
 			Manager.persist(coffee);
@@ -68,13 +68,13 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-		
+		System.out.println("Coffee");
 		List<Object> results = null;
 		try {
 			results = Manager.queryDB("FETCH " + Coffee.class.getName());
-			for(int index = 0; index < results.size(); index++){
-				Primatives res = (Primatives) results.get(index);
-				System.out.println(res.getPString());
+			for(Object obj : results){
+				Coffee res = (Coffee) obj;
+				System.out.println(res.getName() + ", " + res.getStrength() + ", " + res.getMilk());
 			}
 		} catch (AQLException e) {
 			// TODO Auto-generated catch block
@@ -87,13 +87,13 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-		
+		System.out.println("Now for tea");
 				
 		try {
 			results = Manager.queryDB("FETCH " + Tea.class.getName());
 			for(int index = 0; index < results.size(); index++){
-				Primatives res = (Primatives) results.get(index);
-				System.out.println(res.getPString());
+				Tea res = (Tea)results.get(index);
+				System.out.println(res.getName() + ", " + res.getStrength() + ", " + res.getMilk());
 			}
 		} catch (AQLException e) {
 			// TODO Auto-generated catch block

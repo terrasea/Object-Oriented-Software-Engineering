@@ -82,7 +82,7 @@ public class TestManager {
 		p.setPChar('c');
 		p.setPDouble(100.110);
 		p.setPFloat(new Float(0.1));
-		p.setPInt(100);
+		p.setPInt(1);
 		p.setPString("HELLO WORLD");
 		
 		Manager.persist(p);
@@ -91,7 +91,7 @@ public class TestManager {
 		Assert.assertTrue(s.equals("HELLO WORLD"));
 		
 		int i = (Integer) Manager.getField(p.getClass().getName(), 1, "pInt");
-		Assert.assertTrue(i == 100);
+		Assert.assertTrue(i == 1);
 		
 		boolean b = (Boolean) Manager.getField(p.getClass().getName(), 1, "pBool");
 		Assert.assertTrue(b);
@@ -116,7 +116,7 @@ public class TestManager {
 		
 		Manager.persist(p);
 		
-		Assert.assertTrue(Manager.deleteFromDb(p.getClass().getName(), 1));
+		Assert.assertTrue(Manager.deleteFromDb(p));
 	}
 	
 	@Test

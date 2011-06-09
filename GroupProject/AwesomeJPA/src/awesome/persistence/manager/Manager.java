@@ -2,6 +2,7 @@ package awesome.persistence.manager;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -12,6 +13,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import awesome.persistence.annotations.Basic;
+import awesome.persistence.annotations.ID;
 
 /**
  * 
@@ -56,13 +60,12 @@ public class Manager {
 		Class<? extends Object> c = entity.getClass();
 		
 		// Test if the provided class is valid
-		if (!isEntity(entity)) {
+		if (!isEntity(entity)){
 			throw new NotAEntity("Not in the list of entities to persist - " + entity.getClass().getName());
 		}
 		
-		// Test if a table exists for the entity
+		// If a table does not exist create it
 		if(!doesTableExist(c.getName().replace('$', '_').replace('.','_') )){
-			// Create table
 			createTable(entity);				
 		}
 		
@@ -79,10 +82,31 @@ public class Manager {
 		
 		// Loop over all fields and build sql string, not processing last index
 		// Because it is always a reference to itself
-		for(int index = 0; index < fields.length - 1; index++){
+		for(int fieldsIndex = 0; fieldsIndex < fields.length - 1; fieldsIndex++){
 			
 			// Get current field
-			Field f = fields[index];
+			Field f = fields[fieldsIndex];
+			
+			// Get annotations for the field
+			Annotation[] ans = f.getAnnotations();
+			
+			// Used to denote if a basic entity
+			boolean basic = false;
+			
+			// Iteration over annotations and extract information
+			for(int ansIndex = 0; ansIndex < ans.length; ansIndex++){
+				Annotation a = ans[ansIndex];
+				
+				// Switch for annotation type
+				if(a.annotationType().equals(Basic.class)){
+					basic = true;
+				}
+			}
+			
+			// If not basic then dont process field
+			if(!basic){
+				continue;
+			}
 			
 			// Add to sql column names
 			insertSql.append(f.getName());
@@ -109,24 +133,30 @@ public class Manager {
 				if (type.equals("java.lang.String")) {
 					String s = (String) getter.invoke(entity, (Object[]) null);
 					valsBuilder.append("'" + s + "'");
+					
 				} else if (type.equals("int")) {
 						Integer i = (Integer) getter.invoke(entity, (Object[]) null);
 						valsBuilder.append(i.toString());
+						
 				} else if (type.equals("boolean")) {
 					Boolean b = (Boolean) getter.invoke(entity, (Object[]) null);
 					if (b)
 						valsBuilder.append("1");
 					else
 						valsBuilder.append("0");
+					
 				} else if (type.equals("double")) {
 					Double d = (Double) getter.invoke(entity, (Object[]) null);
 					valsBuilder.append(d.toString());
+					
 				} else if (type.equals("float")) {
 					Float fl = (Float) getter.invoke(entity, (Object[]) null);
 					valsBuilder.append(fl.toString());
+					
 				} else if (type.equals("char")) {
 					Character ch = (Character) getter.invoke(entity, (Object[]) null);
 					valsBuilder.append("'" + ch.toString() + "'");
+					
 				} else {
 					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 				}
@@ -135,7 +165,7 @@ public class Manager {
 				throw new EntityException("Error accessing getter for field '" + f.getName() + "'");
 			}
 			// Add apostrophes if not the last value
-			if (index != fields.length - 2) {
+			if (fieldsIndex != fields.length - 2) {
 				valsBuilder.append(", ");
 				insertSql.append(", ");
 			}
@@ -148,6 +178,8 @@ public class Manager {
 		// Append the strings together
 		insertSql.append(valsBuilder.toString());
 
+		System.out.println(insertSql.toString());
+		
 		// Get connection to the database
 		Connection dbcon = getConnection();
 
@@ -176,13 +208,53 @@ public class Manager {
 		// split on white spaces
 		String[] args = query.split(" ");
 		
+		// get class for object
+		Class<? extends Object> c;
+		try {
+			c = Class.forName(args[1]);
+		} catch (ClassNotFoundException e1) {
+			throw new AQLException("Provided classname is invalid - " + args[1]);
+		}	
+		
 		// test that at least 2 words, were provided, the first one is fetch and the second one is a valid entity
-		if(args.length < 2 || !args[0].toLowerCase().equals("fetch") || !isEntity(args[1])){
+		if(args.length < 2 || !args[0].toLowerCase().equals("fetch") || !isEntity(c)){
 			throw new AQLException("Error in fetch statement.");
 		}
 		
+		// Get list of the declared fields in the class
+		Field[] fields = c.getDeclaredFields();
+		
+		// Reference for pk
+		Field primaryKey = null;
+		
+		// Loop over all fields and build sql string, not processing last index
+		// Because it is always a reference to itself
+		for(int fieldsIndex = 0; fieldsIndex < fields.length - 1; fieldsIndex++){
+			
+			// Get current field
+			Field f = fields[fieldsIndex];
+			
+			// Get annotations for the field
+			Annotation[] ans = f.getAnnotations();
+			
+			// Iteration over annotations and extract information
+			for(int ansIndex = 0; ansIndex < ans.length; ansIndex++){
+				Annotation a = ans[ansIndex];
+				
+				// Switch for annotation type
+				if(a.annotationType().equals(ID.class)){
+					primaryKey = f;
+					break;
+				}
+			}
+		}
+		
+		// If no primary key found
+		if(primaryKey == null){
+			throw new EntityException("No primary key found for object");
+		}
 		// Start building the sql string
-		StringBuilder sql = new StringBuilder("SELECT awesome_id FROM " + args[1].replace("$","_").replace(".","_"));
+		StringBuilder sql = new StringBuilder("SELECT "+ primaryKey.getName() +" FROM " + args[1].replace("$","_").replace(".","_"));
 		
 		// If the args is longer than 2 then there are where clauses
 		if(args.length > 2){
@@ -219,17 +291,6 @@ public class Manager {
 		
 		// Loop over sql results
 		while(res.next()){
-			
-			// Get the class of the object to persist
-			Class<? extends Object> c;
-			try {
-				c = Class.forName(args[1]);
-			} catch (ClassNotFoundException e) {
-				//Clean up 
-				stmt.close();
-				dbcon.close();
-				throw new EntityException("Could not find class " + args[1]);
-			}
 			
 			// Create a new instance of the result object
 			Object result;
@@ -279,15 +340,84 @@ public class Manager {
 	 * 
 	 * @param className The class name the field is for, used to lookup correct table.
 	 * @param awesomeId The awesome_id of the object in the database
-	 * @param field The field name to get
+	 * @param fieldName The field name to get
 	 * @return The field for the object
 	 * @throws SQLException If an error occurred when interacting with the database
 	 * @throws EntityException If there was an error processing the entity
 	 */
-	public static Object getField(String className, int awesomeId, String field) throws SQLException, EntityException{
-		// Create SQL
-		String sql = "SELECT awesome_id, " + field + " FROM " + className.replace(".","_") + " WHERE awesome_id = " + awesomeId;
+	public static Object getField(String className, Object primaryKey, String fieldName) throws SQLException, EntityException{
+		
+		Class<? extends Object> c;
+		
+		// Get the class of the object
+		try {
+			c = Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			// TODO fix this
+			return null;
+		}
+		
+		// Find primary key
+		// Get list of the declared fields in the class
+		Field[] fields = c.getDeclaredFields();
+		
+		// Holder for the field
+		Field pkField = null;
+		Field dataField = null;
+		
+		// Loop over all fields and build sql string, not processing last index
+		// Because it is always a reference to itself
+		for(int fieldsIndex = 0; fieldsIndex < fields.length - 1; fieldsIndex++){
+			
+			// Get current field
+			Field f = fields[fieldsIndex];
+			
+			if(f.getName().equals(fieldName)){
+				dataField = f;
+			}
+			
+			// Get annotations for the field
+			Annotation[] ans = f.getAnnotations();
+			
+			// Iteration over annotations and find primary key
+			for(int ansIndex = 0; ansIndex < ans.length; ansIndex++){
+				Annotation a = ans[ansIndex];
+				
+				// Switch for annotation type
+				if(a.annotationType().equals(ID.class)){
+					pkField = f;
+				}
+			}
+		}
+		// If pk empty throw exception
+		if(pkField == null){
+			throw new EntityException("Could not find primary key for entity " + className);
+		}
+		
+		// if data field empty throw exception
+		if(dataField == null){
+			throw new EntityException("Could not find primary key for entity " + className + " - " + fieldName);
+		}
+		
+		// Split field info on white space
+		String[] info = pkField.toString().split(" ");
 
+		// Get type of field
+		String type = info[info.length - 2];
+		
+		// Format primary key for database use
+		String primaryKeyString = null;
+		
+		if(type.equals("")){
+			primaryKeyString = "\"" + primaryKey +  "\"";
+		}else{
+			primaryKeyString = primaryKey.toString();
+		}
+		// Create SQL
+		String sql = "SELECT " + fieldName + " FROM " + className.replace(".","_") + " WHERE " + pkField.getName() +  " = " + primaryKeyString;
+
+		System.out.println(sql);
+		
 		// Get database connection
 		Connection dbcon = getConnection();
 		
@@ -304,57 +434,33 @@ public class Manager {
 			dbcon.close();
 			return null;
 		}
+
+		// Split field info on white space
+		String[] dataInfo = dataField.toString().split(" ");
+
+		// Get type of field
+		String returnType = dataInfo[info.length - 2];
 		
-		Class<? extends Object> c;
-		
-		// Get the class of the object
-		try {
-			c = Class.forName(className);
-		} catch (ClassNotFoundException e) {
-			// Clean up
-			stmt.close();
-			dbcon.close();
-			return null;
-		}
-		
+		// Pointer for return object
 		Object out = null;
 		
-		// Get list of fields
-		Field[] fields = c.getDeclaredFields();
-		
-		// Iterate over the fields until the right field is found
-		for(int index = 0; index < fields.length; index++){
-			Field f = fields[index];
-			
-			if(f.getName().equals(field)){
-				
-				// Split field info on white space
-				String[] info = f.toString().split(" ");
-
-				// Get type of field
-				String type = info[info.length - 2];
-				
-				// Switch for field type
-				if (type.equals("java.lang.String")) {
-					out = res.getString(field);
-				} else if (type.equals("int")) {
-					out = res.getInt(field);
-				} else if (type.equals("boolean")) {
-					out = res.getBoolean(field);
-				} else if (type.equals("double")) {
-					out = res.getDouble(field);
-				} else if (type.equals("float")) {
-					out = res.getFloat(field);
-				} else if (type.equals("char")) {
-					out = res.getString(field).charAt(0);
-				} else {
-					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
-				}
-				
-				// field found exit loop
-				break;
-			}
+		// Switch for field type
+		if (returnType.equals("java.lang.String")) {
+			out = res.getString(fieldName);
+		} else if (returnType.equals("int")) {
+			out = res.getInt(fieldName);
+		} else if (returnType.equals("boolean")) {
+			out = res.getBoolean(fieldName);
+		} else if (returnType.equals("double")) {
+			out = res.getDouble(fieldName);
+		} else if (returnType.equals("float")) {
+			out = res.getFloat(fieldName);
+		} else if (returnType.equals("char")) {
+			out = res.getString(fieldName).charAt(0);
+		} else {
+			System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 		}
+
 		// Clean up
 		stmt.close();
 		dbcon.close();
@@ -394,14 +500,18 @@ public class Manager {
 	 * @return True if the operation succeeded, false otherwise
 	 * @throws SQLException If the operation was unsuccessful
 	 */
-	public static boolean deleteFromDb(String className, int awesomeId) throws SQLException{
+	public static boolean deleteFromDb(Object obj) throws SQLException{
+		String className = obj.getClass().getName();
+		
 		// If there is no table then no deletion can be performed
-		if(doesTableExist(className)){
+		if(doesTableExist(obj.getClass().getName())){
 			return false;
 		}
 		
+		// GET PRIMARY KEY AND THEN SET SQL
+		
 		// Build the sql string
-		String sql = "DELETE FROM " + className.replace(".","_") + " WHERE awesome_id = " + awesomeId;
+		String sql = "DELETE FROM " + className.replace(".","_") + " WHERE awesome_id = ";
 		System.out.println(sql);
 		// Get connection to the database
 		Connection dbcon = getConnection();
@@ -444,17 +554,23 @@ public class Manager {
 	 * Create a table for the entity in the database
 	 * 
 	 * @param entity The object to make a table in the database for.
+	 * @throws EntityException 
 	 */
-	private static void createTable(Object entity) throws SQLException{
+	private static void createTable(Object entity) throws SQLException, EntityException{
 		// Get the class of the object
 		Class<? extends Object> c = entity.getClass();
 		
 		// Start sql string
 		StringBuilder sql = new StringBuilder("CREATE TABLE " + c.getName().replace('$', '_').replace('.','_') + " (");
-		sql.append(" awesome_id INTEGER PRIMARY KEY , ");
+		//sql.append(" awesome_id INTEGER PRIMARY KEY , ");
 		
 		// Get list of the declared fields in the class
 		Field[] fields = c.getDeclaredFields();
+		
+		// Store the primary key
+		boolean primaryKey = false;
+		// Flag for if field has been added to sql
+		boolean fieldAdded = false;
 		
 		// Loop over all fields and build sql string, not processing last index
 		// Because it is always a reference to itself
@@ -463,12 +579,52 @@ public class Manager {
 			// Get current field
 			Field f = fields[index];
 			
-			sql.append(f.getName());
+			// Get the list of annotations
+			Annotation[] ans = f.getAnnotations();			
 			
-			String[] info = f.toString().split(" ");
+			// Denotes if the field is basic
+			boolean basic = false;
+			boolean pk = false;
 			
-			String type = info[info.length - 2];
+			// Iteration over annotations and extract information
+			for(int ansIndex = 0; ansIndex < ans.length; ansIndex++){
+				Annotation a = ans[ansIndex];
 				
+				// Switch for annotation type
+				if(a.annotationType().equals(Basic.class)){
+					basic = true;
+				}else if(a.annotationType().equals(ID.class)){
+					if(primaryKey){
+						throw new EntityException("Primary key declared for two fiels.");
+					}else{
+						primaryKey = true;
+						pk = true;
+					}
+				}
+			}
+			
+			// If type is not basic ignore
+			if(!basic){
+				// If id was set then throw error for primary key not being annotated with basic
+				if(pk)
+					throw new EntityException("Primary key declared for non basic field - " + f.getName());
+				continue;
+			}
+			
+			// add name to SQL
+			if(fieldAdded)
+				sql.append(", " + f.getName());
+			else
+				sql.append(f.getName());
+			
+			// set flag for field added
+			fieldAdded = true;
+			
+			// Get datatype of field
+			String[] info = f.toString().split(" ");
+			String type = info[info.length - 2];
+			
+			// Switch for field type, adding type of field to sql
 			if(type.equals("java.lang.String")){
 				sql.append(" VARCHAR(254)");
 			}else if(type.equals("int")){
@@ -483,15 +639,21 @@ public class Manager {
 				sql.append(" VARCHAR(1)");
 			}else{
 				System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
+				continue;
 			}
 			
-			if(index != fields.length - 2){
-				sql.append(", ");
+			// If the field is the primary key add to sql
+			if(pk){
+				sql.append(" PRIMARY KEY");
 			}
 		}
 		
+		// Finish SQL
 		sql.append(")");
 		
+		System.out.println(sql.toString());
+		
+		// Get database connection
 		Connection dbcon;
 		try {
 			dbcon = getConnection();
@@ -500,8 +662,14 @@ public class Manager {
 			return;
 		}
 		
+		// Get statement from the database connection
 		Statement stmt = dbcon.createStatement();
+		
+		// Execute command
 		stmt.executeUpdate(sql.toString());
+		
+		//Clean up
+		stmt.close();
 		dbcon.close();
 	}
 	
@@ -519,7 +687,7 @@ public class Manager {
     }
     
     /**
-     * Queries the provided sqlite database abd checks if a table for the provided
+     * Queries the provided sqlite database and checks if a table for the provided
      * entity exists.
      * 
      * @param tableName The table name to check for

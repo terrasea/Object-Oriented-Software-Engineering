@@ -28,7 +28,7 @@ public class FieldFetcher {
 		if (id == null) {
 			throw new EntityException("No id for entity present");
 		}
-		Object value = Manager.getField(table, (Integer) id, field);
+		Object value = Manager.getField(table, id, field);
 		fieldID.setAccessible(true);
 		if(value != null) {
 			fieldID.set(klass, value);

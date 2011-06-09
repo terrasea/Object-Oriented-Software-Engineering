@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.sun.xml.internal.rngom.ast.builder.Annotations;
-
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
@@ -95,6 +93,7 @@ public class Manager {
 			
 			// Used to denote if a basic entity
 			boolean basic = false;
+			boolean pk = false;
 			
 			// Iteration over annotations and extract information
 			for(int ansIndex = 0; ansIndex < ans.length; ansIndex++){
@@ -104,10 +103,14 @@ public class Manager {
 				if(a.annotationType().equals(Basic.class)){
 					basic = true;
 				}
+				
+				if(a.annotationType().equals(ID.class)) {
+					pk = true;
+				}
 			}
 			
 			// If not basic then dont process field
-			if(!basic){
+			if(!basic && !pk){
 				continue;
 			}
 			
@@ -120,17 +123,6 @@ public class Manager {
 			// Get type of field
 			String type = info[info.length - 2];
 
-			// Method of the getter for the field
-			Method getter;
-
-			// Attempt to get the getter for the field
-			try {
-				getter = c.getMethod("get" + capitalize(f.getName()));
-			} catch (Exception e) {
-				// the method could not be accessed throw exception
-				throw new EntityException("Error accessing getter for field '"
-						+ f.getName() + "'\n 1. " + e);
-			}
 
 			// Attempt to get the value of the object from the fields getter
 			try {
@@ -440,8 +432,9 @@ public class Manager {
 			primaryKeyString = primaryKey.toString();
 		}
 		// Create SQL
-		String sql = "SELECT " + fieldName + " FROM " + className.replace(".","_") + " WHERE " + pkField.getName() +  " = " + primaryKeyString;
+		String sql = "SELECT " + fieldName + " FROM " + className.replace(".","_") + " WHERE " + pkField.getName() +  " = '" + primaryKeyString + "'";
 
+		System.out.println(sql);
 		
 		// Get database connection
 		Connection dbcon = getConnection();
@@ -470,7 +463,6 @@ public class Manager {
 		// Pointer for return object
 		Object out = null;
 		
-		System.out.println("Field name: " + fieldName + ", " + dataField.getType().getSimpleName());
 		//out = res.getObject(fieldName);
 		// Switch for field type
 		if (returnType.equals("String")) {
@@ -674,10 +666,10 @@ public class Manager {
 			}
 			
 			// If type is not basic ignore
-			if(!basic){
+			if(!basic && !pk){
 				// If id was set then throw error for primary key not being annotated with basic
-				if(pk)
-					throw new EntityException("Primary key declared for non basic field - " + f.getName());
+//				if(pk)
+//					throw new EntityException("Primary key declared for non basic field - " + f.getName());
 				continue;
 			}
 			

@@ -4,22 +4,21 @@ import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
 public class Coffee {
+//	@ID
+//	private int awesomeId;
+//	
+//	
+//	public void setAwesomeId(Integer id) {
+//		this.awesomeId = id;
+//	}
+//	
+//	
+//	public int getAwesomeId() {
+//		return awesomeId;
+//	}
+	
+	
 	@ID
-	@Basic
-	private int awesomeId;
-	
-	
-	public void setAwesomeId(Integer id) {
-		this.awesomeId = id;
-	}
-	
-	
-	public int getAwesomeId() {
-		return awesomeId;
-	}
-	
-	
-	@Basic
 	private String name;
 	
 	

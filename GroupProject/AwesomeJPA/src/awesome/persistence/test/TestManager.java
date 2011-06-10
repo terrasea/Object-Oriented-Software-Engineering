@@ -2,11 +2,13 @@ package awesome.persistence.test;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -25,6 +27,23 @@ public class TestManager {
 	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesome.properties";
 	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesomeInvalid.properties";
 
+	@Before
+	public void setUp(){
+		File f = new File("test.db");
+		
+		while(f.exists()){
+			f.delete();
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
+	}
+	
 	@Test
 	public void testConstructor(){
 		System.out.println(Primatives.class.getName());
@@ -51,7 +70,7 @@ public class TestManager {
 		Manager.setProperties(invalidPropertiesPath);
 	}
 	
-	//@Test
+	@Test
 	public void testPersist() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();

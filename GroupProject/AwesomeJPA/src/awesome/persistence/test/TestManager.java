@@ -251,7 +251,7 @@ public class TestManager {
 		assertTrue(results.size() == 1);
 		
 		Tea res = (Tea)results.get(0);
-		assertTqueryrue(res.getAwesomeId() == 100);
+		assertTrue(res.getAwesomeId() == 100);
 	}
 	
 	@Test
@@ -274,5 +274,55 @@ public class TestManager {
 		
 		String s = (String) Manager.getField(p.getClass().getName(), 100, "pString");
 		Assert.assertTrue(s.equals("NOT HELLO WORLD"));
+	}
+	
+
+	@Test
+	public void whereTest() throws NotAEntity, SQLException, EntityException, AQLException{
+		Primatives p = new Primatives();
+		p.setPBool(true);
+		p.setPChar('c');
+		p.setPDouble(100.110);
+		p.setPFloat(new Float(0.1));
+		p.setPInt(1);
+		p.setPString("HELLO WORLD");
+		
+		Manager.persist(p);
+		
+		Primatives p2 = new Primatives();
+		p2.setPBool(true);
+		p2.setPChar('c');
+		p2.setPDouble(100.110);
+		p2.setPFloat(new Float(0.1));
+		p2.setPInt(2);
+		p2.setPString("NOT HELLO WORLD");
+		
+		Manager.persist(p2);
+		
+		Primatives p3 = new Primatives();
+		p3.setPBool(true);
+		p3.setPChar('c');
+		p3.setPDouble(100.110);
+		p3.setPFloat(new Float(0.1));
+		p3.setPInt(3);
+		p3.setPString("NOT HELLO WORLD");
+		
+		Manager.persist(p3);
+		
+		List<Object> results = Manager.queryDB("FETCH " + p.getClass().getCanonicalName() + " WHERE pString = 'NOT HELLO WORLD'");
+		assertTrue(results.size() == 2);
+		
+		Primatives res1 = (Primatives) results.get(0);
+		Primatives res2 = (Primatives) results.get(1);
+		
+		int x = res1.getPInt();
+		int y = res2.getPInt();
+
+		if(x == 2)
+			assertTrue(y == 3);
+		else{
+			assertTrue(x == 3);
+			assertTrue(y == 2);
+		}
 	}
 }

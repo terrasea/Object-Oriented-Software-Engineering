@@ -52,7 +52,7 @@ public class Manager {
 			throw new PropertiesException("Invalid properties file provided.");
 		}
 		
-		try {
+		/*try {
 			LazyInitAgent clt = new LazyInitAgent();
 			String[] entities = properties.getProperty("entities").split(";");
 			for(String entity: entities) {
@@ -63,7 +63,7 @@ public class Manager {
 		} catch (AgentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	/**
@@ -347,8 +347,14 @@ public class Manager {
 			throw new AQLException("Error in fetch statement.");
 		}
 		
+		// test if object provided is a valid entity
 		if(!isEntity(c)){
 			throw new AQLException("Provided object is not an entity.");
+		}
+		
+		if(args.length > 2){
+			if(!args[3].toLowerCase().equals("where"))
+				throw new AQLException("Where clause expceted after the class name.");
 		}
 		
 		// Reference for pk
@@ -359,6 +365,9 @@ public class Manager {
 		// Start building the sql string
 		StringBuilder sql = new StringBuilder("SELECT " + pid + " FROM " + args[1].replace("$", "_").replace(".", "_"));
 
+		for(int index = 2; index < args.length; index++){
+			sql.append(" " + args[index]);
+		}
 		// Get database connection
 		Connection dbcon = getConnection();
 

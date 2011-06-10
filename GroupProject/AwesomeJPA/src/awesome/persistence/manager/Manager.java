@@ -216,7 +216,6 @@ public class Manager {
 		sql.append(")");
 		System.out.println(sql.toString());
 		
-		
 		// Get connection to the database
 		Connection dbcon = getConnection();
 

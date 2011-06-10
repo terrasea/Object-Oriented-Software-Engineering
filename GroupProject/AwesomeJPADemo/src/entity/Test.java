@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Test {
-	private ArrayList<Object> list;
+	private ArrayList<Object> list = new ArrayList<Object>();
 	private String name;
 	
 	public List<Object> getList() {

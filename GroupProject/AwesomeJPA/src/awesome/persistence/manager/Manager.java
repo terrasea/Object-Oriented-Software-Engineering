@@ -18,6 +18,8 @@ import awesome.persistence.agent.LazyInitAgent;
 import awesome.persistence.agent.Transformer;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
+import awesome.persistence.annotations.ManyToOne;
+import awesome.persistence.annotations.OneToMany;
 
 /**
  * 
@@ -87,11 +89,11 @@ public class Manager {
 		}
 
 		// Start building sql to insert vals into entity
-		StringBuilder insertSql = new StringBuilder("INSERT INTO " + c.getName().replace('$', '_').replace('.', '_') + "(");
-
+		List<String> nameList = new ArrayList<String>();
+		
 		// Start building the values part of the sql string
-		StringBuilder valsBuilder = new StringBuilder("VALUES(");
-
+		List<String> valsList =  new ArrayList<String>();
+		
 		// Get list of the declared fields in the class
 		Field[] fields = c.getDeclaredFields();
 
@@ -108,6 +110,8 @@ public class Manager {
 			// Used to denote if a basic entity
 			boolean basic = false;
 			boolean pk = false;
+			boolean m21 = false;
+			boolean o2m = false;
 			
 			// Iteration over annotations and extract information
 			for(int ansIndex = 0; ansIndex < ans.length; ansIndex++){
@@ -121,15 +125,21 @@ public class Manager {
 				if(a.annotationType().equals(ID.class)) {
 					pk = true;
 				}
+				
+				if(a.annotationType().equals(ManyToOne.class)) {
+					m21 = true;
+				} else if(a.annotationType().equals(OneToMany.class)) {
+					o2m = true;
+				}
 			}
 			
 			// If not basic then dont process field
-			if(!basic && !pk){
+			if(!basic && !pk && (!m21 || !o2m)){
 				continue;
 			}
 			
 			// Add to sql column names
-			insertSql.append(f.getName());
+			nameList.add(f.getName());
 
 			// Get type of field
 			String type = f.getType().getCanonicalName();
@@ -140,33 +150,32 @@ public class Manager {
 				f.setAccessible(true);
 				if (type.equals("java.lang.String")) {
 					String s = (String) f.get(entity);
-					valsBuilder.append("'" + s + "'");
+					valsList.add("'" + s + "'");
 					
 				} else if (type.equals("int")) {
 					Integer i = (Integer) f.get(entity);
-					valsBuilder.append(i.toString());
+					valsList.add(i.toString());
 				} else if (type.equals("boolean")) {
 					Boolean b = (Boolean) f.get(entity);
 					if (b)
-						valsBuilder.append("1");
+						valsList.add("1");
 					else
-						valsBuilder.append("0");
+						valsList.add("0");
 					
 				} else if (type.equals("double")) {
 					Double d = (Double) f.get(entity);
-					valsBuilder.append(d.toString());
+					valsList.add(d.toString());
 					
 				} else if (type.equals("float")) {
 					Float fl = (Float) f.get(entity);
-					valsBuilder.append(fl.toString());
+					valsList.add(fl.toString());
 					
 				} else if (type.equals("char")) {
 					Character ch = (Character) f.get(entity);
-					valsBuilder.append("'" + ch.toString() + "'");
+					valsList.add("'" + ch.toString() + "'");
 					
 				} else {
 					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
-					
 					// Set field to be accessable
 					f.setAccessible(true);
 					// Get the object
@@ -184,30 +193,38 @@ public class Manager {
 					Object val = primaryKey.get(plojo);
 					
 					// add value to vals string
-					valsBuilder.append(val.toString());
+					valsList.add(val.toString());
 				}
 			} catch (Exception e) {
 				// the method could not be accessed throw exception
 				throw new EntityException("Error accessing getter for field '"+ f.getName() + "'\n 2. " + e);
 			}
-			// Add apostrophes if not the last value
-			if (fieldsIndex != fields.length - 1) {
-				valsBuilder.append(", ");
-				insertSql.append(", ");
-				System.out.println("last one? " + fieldsIndex + ": " + fields[fieldsIndex].getName());
-			}
+
 		}
-
-		//insertSql.delete(insertSql.length()-2, insertSql.length());
-		//valsBuilder.delete(valsBuilder.length() - 2, valsBuilder.length());
-		// Finish of sql string
-		insertSql.append(") ");
-		valsBuilder.append(" ) ");
-
-		// Append the strings together
-		insertSql.append(valsBuilder.toString());
-
-		System.out.println(insertSql.toString());
+		
+		// Build up the output sql string
+		StringBuilder sql = new StringBuilder("INSERT INTO " + c.getName().replace('$', '_').replace('.', '_') + " ( ");
+		
+		// Loop over name list
+		for(int index = 0; index < nameList.size(); index++){
+			sql.append(nameList.get(index));
+			
+			if(index != nameList.size() - 1)
+				sql.append(",");
+		}
+		// add values
+		sql.append(") VALUES (");
+		// Loop over values list
+		for(int index = 0; index < valsList.size(); index++){
+			sql.append(valsList.get(index));
+			
+			if(index != valsList.size() - 1)
+				sql.append(",");
+		}
+		
+		// Complete sql
+		sql.append(")");
+		System.out.println(sql.toString());
 		
 		// Get connection to the database
 		Connection dbcon = getConnection();
@@ -216,7 +233,7 @@ public class Manager {
 		Statement stmt = dbcon.createStatement();
 
 		// Execute the sql on the database
-		stmt.execute(insertSql.toString());
+		stmt.execute(sql.toString());
 
 		// clean up
 		stmt.close();
@@ -271,7 +288,7 @@ public class Manager {
 		// Get statement from connection
 		Statement stmt = dbcon.createStatement();
 
-
+		System.out.println(sql.toString());
 		// Execute the query
 		ResultSet res = stmt.executeQuery(sql.toString());
 

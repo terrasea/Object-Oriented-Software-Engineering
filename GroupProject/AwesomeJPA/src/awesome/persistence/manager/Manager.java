@@ -98,7 +98,7 @@ public class Manager {
 		// Loop over all fields and build sql string, not processing last index
 		// Because it is always a reference to itself
 		for(int fieldsIndex = 0; fieldsIndex < fields.length; fieldsIndex++){
-			
+			System.out.println("" + fieldsIndex + ": " + fields[fieldsIndex].getName());
 			// Get current field
 			Field f = fields[fieldsIndex];
 			
@@ -194,11 +194,12 @@ public class Manager {
 			if (fieldsIndex != fields.length - 1) {
 				valsBuilder.append(", ");
 				insertSql.append(", ");
+				System.out.println("last one? " + fieldsIndex + ": " + fields[fieldsIndex].getName());
 			}
 		}
 
-		insertSql.delete(insertSql.length()-2, insertSql.length());
-		valsBuilder.delete(valsBuilder.length() - 2, valsBuilder.length());
+		//insertSql.delete(insertSql.length()-2, insertSql.length());
+		//valsBuilder.delete(valsBuilder.length() - 2, valsBuilder.length());
 		// Finish of sql string
 		insertSql.append(") ");
 		valsBuilder.append(" ) ");

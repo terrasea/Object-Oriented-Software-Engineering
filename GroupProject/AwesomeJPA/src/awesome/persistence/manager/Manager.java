@@ -475,7 +475,6 @@ public class Manager {
 		}
 		
 		if(args.length > 2){
-			System.out.println(args[2]);
 			if(!args[2].toLowerCase().equals("where"))
 				throw new AQLException("Where clause expceted after the class name.");
 		}

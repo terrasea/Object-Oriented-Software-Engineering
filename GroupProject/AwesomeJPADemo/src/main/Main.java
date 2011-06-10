@@ -44,37 +44,32 @@ public class Main {
 		Coffee coffee = new Coffee();
 		coffee.setName("Long black");
 		coffee.setStrength(5);
-		coffee.setMilk(true);
-		try {
-			Field f = t.getClass().getDeclaredField("coffees");
-			f.setAccessible(true);
-			List<Coffee> l = new LinkedList<Coffee>();
-			l.add(coffee);
-			Collection c = ((Collection)f.get(t));
-			if (c != null) {
-				c.addAll(l);
-			} else {
-				
-			}
-			f = t.getClass().getDeclaredField("name");
-			f.setAccessible(true);
-			f.set(t, "James");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		coffee.setMilk(false);
+		coffee.setTest(t);
+		Coffee coffee2 = new Coffee();
+		coffee2.setName("Short black");
+		coffee2.setStrength(5);
+		coffee2.setMilk(false);
+		coffee2.setTest(t);
+		//t.getCoffees().add(coffee);
+//		System.out.println(t.getCoffees());
+		
 
 		try {
 			Manager.setProperties(propertiesPath);
 			
 
-			Tea tea = new Tea();
-			tea.setName("Earl gray");
-			tea.setStrength(4);
-			tea.setMilk(true);
+//			Tea tea = new Tea();
+//			tea.setName("Earl gray");
+//			tea.setStrength(4);
+//			tea.setMilk(true);
 
+			
+			System.out.println("Persist");
 			Manager.persist(coffee);
-			Manager.persist(tea);
+			Manager.persist(coffee2);
 			Manager.persist(t);
+			System.out.println("Persist done");
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -98,6 +93,10 @@ public class Main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
+//		System.out.println(t.getCoffees());
+		
 		System.out.println("Coffee");
 		List<Object> results = null;
 		try {
@@ -105,7 +104,8 @@ public class Main {
 			for (Object obj : results) {
 				Coffee res = (Coffee) obj;
 				System.out.println(res.getName() + ", " + res.getStrength()
-						+ ", " + res.getMilk());
+						+ ", " + res.getMilk() + ", " +  res.getTest());
+				System.out.println("Test entities are: " + res.getTest().getId());
 			}
 		} catch (AQLException e) {
 			// TODO Auto-generated catch block
@@ -126,6 +126,25 @@ public class Main {
 				Tea res = (Tea) results.get(index);
 				System.out.println(res.getName() + ", " + res.getStrength()
 						+ ", " + res.getMilk());
+			}
+		} catch (AQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (EntityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		System.out.println("Now to show the entity Test");
+		try {
+			results = Manager.queryDB("FETCH " + Test.class.getName());
+			for (Object obj : results) {
+				Test res = (Test) obj;
+				System.out.println(res.getId() + ", " + res.getCoffees());
 			}
 		} catch (AQLException e) {
 			// TODO Auto-generated catch block

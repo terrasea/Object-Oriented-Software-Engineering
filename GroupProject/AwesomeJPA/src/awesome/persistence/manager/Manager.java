@@ -10,12 +10,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import awesome.persistence.agent.AgentException;
-import awesome.persistence.agent.LazyInitAgent;
-import awesome.persistence.agent.Transformer;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 import awesome.persistence.annotations.ManyToOne;
@@ -66,6 +64,110 @@ public class Manager {
 		}*/
 	}
 
+	
+	
+	@SuppressWarnings("unchecked")
+	private static <E> void handleOneToMany(Field f, E entity) throws NotAEntity, SQLException, EntityException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		f.setAccessible(true);
+		Collection<Object> objs = null;
+		try {
+			objs = (Collection<Object>) f.get(entity);
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(objs == null) {
+			return;
+		}
+		Object obj = objs.size() > 0 ? objs.toArray()[0] : null;
+		String objName = null;
+		if(obj != null) {
+			for(Field field: obj.getClass().getDeclaredFields()) {
+				field.setAccessible(true);
+				ManyToOne mm2o = field.getAnnotation(ManyToOne.class);
+				try {
+					if(mm2o != null && field.get(entity).getClass().getName().equals(mm2o.target().getName())) {
+						objName = field.getName();
+						System.out.println("Name retrieved");
+					}
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+		}
+		System.out.println("One to many before loop");
+		for(Object obj2: objs) {
+			Field field = null;
+			field = obj2.getClass().getDeclaredField(objName);
+			field.setAccessible(true);
+			field.set(obj2, entity);
+			System.out.println("One to many add: "+ field.get(obj2));
+			Manager.persist(obj2);
+		}
+	}
+	
+	
+	private static void handleManyToOne(Field f, Collection<String> valsList, Object entity) throws IllegalArgumentException, EntityException, IllegalAccessException {
+		f.setAccessible(true);
+		Object fkObject = f.get(entity);
+		if(fkObject == null) {
+			valsList.add("NULL");
+			return;
+		}
+		Field pkfield = Manager.getPrimaryKeyField(fkObject.getClass());
+		if(pkfield == null) {
+			valsList.add("NULL");
+			return;
+		}
+		pkfield.setAccessible(true);
+		System.out.println("1 Entity in many to one = " + entity + ", " + pkfield.getName());
+		Object tmp = pkfield.getInt(fkObject);
+		System.out.println("1a Entity in many to one = " + entity + ", " + pkfield.getName());
+		if(tmp != null) {
+			System.out.println("2 Entity in many to one = " + entity + ", " + pkfield.getName());
+			String type = tmp.getClass().getCanonicalName();
+			if (type.equals("java.lang.String")) {
+				String s = (String) tmp;
+				valsList.add("'" + s + "'");
+				
+			} else if (type.equals("int")) {
+				System.out.println("3 Entity in many to one = " + entity + ", " + pkfield.getName());
+				Integer i = (Integer) tmp;
+				valsList.add(i.toString());
+				System.out.println("4 Entity in many to one = " + entity + ", " + pkfield.getName());
+			} else if (type.equals("boolean")) {
+				Boolean b = (Boolean) tmp;
+				if (b)
+					valsList.add("1");
+				else
+					valsList.add("0");
+				
+			} else if (type.equals("double")) {
+				Double d = (Double) tmp;
+				valsList.add(d.toString());
+				
+			} else if (type.equals("float")) {
+				Float fl = (Float) tmp;
+				valsList.add(fl.toString());
+				
+			} else if (type.equals("char")) {
+				Character ch = (Character) tmp;
+				valsList.add("'" + ch.toString() + "'");
+				
+			}
+		}
+	}
+	
+	
+	
 	/**
 	 * Sends an object to the database
 	 * 
@@ -117,7 +219,7 @@ public class Manager {
 			// Used to denote if a basic entity
 			boolean basic = false;
 			boolean pk = false;
-			boolean m21 = false;
+			boolean m2o = false;
 			boolean o2m = false;
 			
 			// Iteration over annotations and extract information
@@ -135,14 +237,14 @@ public class Manager {
 				}
 				
 				if(a.annotationType().equals(ManyToOne.class)) {
-					m21 = true;
+					m2o = true;
 				} else if(a.annotationType().equals(OneToMany.class)) {
 					o2m = true;
 				}
 			}
 			
 			// If not basic then dont process field
-			if(!basic && !pk && (!m21 || !o2m)){
+			if(!basic && !pk && !m2o || o2m){
 				continue;
 			}
 			
@@ -183,13 +285,28 @@ public class Manager {
 					valsList.add("'" + ch.toString() + "'");
 					
 				} else {
+					
+					if(o2m) {
+						Manager.handleOneToMany(f, entity);
+						System.out.println("One to many");
+						continue;
+					} else if(m2o) {
+						Manager.handleManyToOne(f, valsList, entity);
+						System.out.println("Many to one");
+					}
 					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 					// Set field to be accessable
 					f.setAccessible(true);
 					// Get the object
 					Object plojo = f.get(entity);
-					// Store it in the database
-					persist(plojo);
+					if(plojo != null) {
+						System.out.println("Manager.persist plojo");
+						// Store it in the database
+						persist(plojo);
+					} else {
+						continue;
+					}
+					
 					
 					// get the primary key for the plojo
 					Field primaryKey = getPrimaryKeyField(f.getType());
@@ -199,13 +316,18 @@ public class Manager {
 					
 					// Get the value of the primary key
 					Object val = primaryKey.get(plojo);
-					
-					// add value to vals string
-					valsList.add(val.toString());
+					if(val != null) {
+						// add value to vals string
+						valsList.add(val.toString());
+					} else {
+						continue;
+					}
 				}
 			} catch (Exception e) {
 				// the method could not be accessed throw exception
-				throw new EntityException("Error accessing getter for field '"+ f.getName() + "'\n 2. " + e);
+				//throw new EntityException("Error accessing getter for field '"+ f.getName() + "'\n 2. " + e);
+				e.printStackTrace();
+				return;
 			}
 
 		}
@@ -353,7 +475,8 @@ public class Manager {
 		}
 		
 		if(args.length > 2){
-			if(!args[3].toLowerCase().equals("where"))
+			System.out.println(args[2]);
+			if(!args[2].toLowerCase().equals("where"))
 				throw new AQLException("Where clause expceted after the class name.");
 		}
 		
@@ -506,20 +629,41 @@ public class Manager {
 			primaryKeyString = primaryKey.toString();
 		}
 		
-OneToMany o2m = dataField.getAnnotation(OneToMany.class);
-		
+		System.out.println(dataField.getName());
+		OneToMany o2m = dataField.getAnnotation(OneToMany.class);
+		System.out.println(o2m);
 		
 		if(o2m != null) {
 			Class<?> target = o2m.mappedBy();
+			System.out.println(target.getName());
 			String targetFK = null;
 			for(Field field: target.getDeclaredFields()) {
+				System.out.println("field: " + field.getName());
 				ManyToOne m2o = field.getAnnotation(ManyToOne.class);
-				if(m2o != null && m2o.target().equals(target)) {
-					targetFK = field.getName();
+				if(m2o != null) {
+					System.out.println("Target: " + m2o.target() + ", " + classN);
 				}
+				try {
+					
+					if(m2o != null && m2o.target().equals(classN)) {
+						targetFK = field.getName();
+						
+						//Object coll = dataField.get(classN);
+						//System.out.println(coll);
+						break;
+					}
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			if(targetFK == null) {
+				System.out.println("targetFK is null");
+				return null;
 			}
 			try {
 				String query = String.format("FETCH %s WHERE %s='%s'", target.getName(), targetFK, primaryKey);
+				System.out.println(query);
 				List<Object> entities = Manager.queryDB(query);
 				
 				//ArrayList<Object> tmp = entities;
@@ -762,7 +906,8 @@ OneToMany o2m = dataField.getAnnotation(OneToMany.class);
 			// Denotes if the field is basic
 			boolean basic = false;
 			boolean pk = false;
-			
+			boolean o2m = false;
+			boolean m2o = false;
 			// Iteration over annotations and extract information
 			for(int ansIndex = 0; ansIndex < ans.length; ansIndex++){
 				Annotation a = ans[ansIndex];
@@ -777,11 +922,15 @@ OneToMany o2m = dataField.getAnnotation(OneToMany.class);
 						primaryKey = true;
 						pk = true;
 					}
+				} else if(a.annotationType().equals(OneToMany.class)) {
+					o2m = true;
+				} else if(a.annotationType().equals(ManyToOne.class)) {
+					m2o = true;
 				}
 			}
 			
 			// If type is not basic ignore
-			if(!basic && !pk){
+			if(!basic && !pk && !m2o || o2m){
 				continue;
 			}
 			
@@ -790,6 +939,10 @@ OneToMany o2m = dataField.getAnnotation(OneToMany.class);
 				sql.append(", " + f.getName());
 			else
 				sql.append(f.getName());
+			
+//			if(m2o) {
+//				sql.append("_fk");
+//			}
 			
 			// set flag for field added
 			fieldAdded = true;

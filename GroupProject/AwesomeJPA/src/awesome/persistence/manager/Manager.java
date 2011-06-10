@@ -73,8 +73,7 @@ public class Manager {
 	 *            The entity to store in the database
 	 * @throws EntityException
 	 */
-	public static void persist(Object entity) throws NotAEntity, SQLException,
-			EntityException {
+	public static void persist(Object entity) throws NotAEntity, SQLException, EntityException {
 		// Get the class of the object
 		Class<? extends Object> c = entity.getClass();
 
@@ -88,6 +87,14 @@ public class Manager {
 			createTable(entity.getClass());				
 		}
 
+		// Flag to to signal if the command will be an update or insert
+		boolean updating = false;
+		
+		// Test if the object exists in the database
+		if(isPersisted(entity)){
+			updating = true;
+		}
+		
 		// Start building sql to insert vals into entity
 		List<String> nameList = new ArrayList<String>();
 		
@@ -96,7 +103,7 @@ public class Manager {
 		
 		// Get list of the declared fields in the class
 		Field[] fields = c.getDeclaredFields();
-
+		
 		// Loop over all fields and build sql string, not processing last index
 		// Because it is always a reference to itself
 		for(int fieldsIndex = 0; fieldsIndex < fields.length; fieldsIndex++){
@@ -122,6 +129,7 @@ public class Manager {
 					basic = true;
 				}
 				
+				// test for id class
 				if(a.annotationType().equals(ID.class)) {
 					pk = true;
 				}
@@ -203,27 +211,67 @@ public class Manager {
 		}
 		
 		// Build up the output sql string
-		StringBuilder sql = new StringBuilder("INSERT INTO " + c.getName().replace('$', '_').replace('.', '_') + " ( ");
+		StringBuilder sql = new StringBuilder();
 		
-		// Loop over name list
-		for(int index = 0; index < nameList.size(); index++){
-			sql.append(nameList.get(index));
+		// If updating, build update statement, else build insert statement
+		if(updating){
+			// Start update statement
+			sql.append("UPDATE " + c.getName().replace('$', '_').replace('.', '_'));
+			sql.append(" SET ");
 			
-			if(index != nameList.size() - 1)
-				sql.append(",");
-		}
-		// add values
-		sql.append(") VALUES (");
-		// Loop over values list
-		for(int index = 0; index < valsList.size(); index++){
-			sql.append(valsList.get(index));
+			// add  setting fields
+			for(int index = 0; index < nameList.size(); index++){
+				sql.append(nameList.get(index) + " = " + valsList.get(index));
+				
+				if(index != nameList.size() - 1)
+					sql.append(",");
+			}
 			
-			if(index != valsList.size() - 1)
-				sql.append(",");
+			// Set where primary key = entity primary key
+			sql.append(" WHERE ");
+			
+			// get the primary key
+			Field primaryKey = getPrimaryKeyField(c);
+			
+			// set field to be accessible
+			primaryKey.setAccessible(true);
+			
+			// add name to where clause
+			sql.append(primaryKey.getName() + " = ");
+			
+			// get primary key value
+			Object val = null;
+			try {
+				val = primaryKey.get(entity);
+			} catch (Exception e) {
+				throw new EntityException("Could not access primary key for entity - " + c.getCanonicalName());
+			}
+			// add primary key value to where clause
+			sql.append(val.toString());
+			
+		}else{
+			// build insert statement
+			sql.append("INSERT INTO " + c.getName().replace('$', '_').replace('.', '_') + " ( ");
+			// Loop over name list
+			for(int index = 0; index < nameList.size(); index++){
+				sql.append(nameList.get(index));
+				
+				if(index != nameList.size() - 1)
+					sql.append(",");
+			}
+			// add values
+			sql.append(") VALUES (");
+			// Loop over values list
+			for(int index = 0; index < valsList.size(); index++){
+				sql.append(valsList.get(index));
+				
+				if(index != valsList.size() - 1)
+					sql.append(",");
+			}
+			// finish SQL
+			sql.append(")");
 		}
-		
-		// Complete sql
-		sql.append(")");
+		// Print sql
 		System.out.println(sql.toString());
 		
 		// Get connection to the database
@@ -240,6 +288,35 @@ public class Manager {
 		dbcon.close();
 	}
 
+	/**
+	 * Tests if an object has already been stored in the database, by checking if the primary
+	 * key is in the db.
+	 * 
+	 * @param obj
+	 * @return
+	 * @throws EntityException
+	 */
+	private static boolean isPersisted(Object obj) throws EntityException{
+		try {
+			// Get the primary key for the object
+			Field pk = getPrimaryKeyField(obj.getClass());
+			// set the field to be accessible
+			pk.setAccessible(true);
+			// get the primary key field for the object
+			Object res = getField(obj.getClass().getCanonicalName(), pk.get(obj) ,pk.getName());
+			
+			// if there is a primary key then the object is already persisted
+			if(res != null)
+				return true;
+			
+			// Object not persisted
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new EntityException("Could not determine id entity was persited.");
+		}
+	}
+	
 	/**
 	 * Queries the database using the provided AQL script.
 	 * 

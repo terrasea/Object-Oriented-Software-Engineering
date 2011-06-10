@@ -199,8 +199,6 @@ public class TestManager {
 	 */
 	@Test
 	public void testComplexObject() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
-		
-		
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
@@ -254,5 +252,27 @@ public class TestManager {
 		
 		Tea res = (Tea)results.get(0);
 		assertTqueryrue(res.getAwesomeId() == 100);
+	}
+	
+	@Test
+	public void updateTest() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException, AQLException{
+		Manager.setProperties(propertiesPath);
+		Primatives p = new Primatives();
+		p.setPBool(true);
+		p.setPChar('c');
+		p.setPDouble(100.110);
+		p.setPFloat(new Float(0.1));
+		p.setPInt(100);
+		p.setPString("HELLO WORLD");
+		
+		Manager.persist(p);
+		p.setPString("NOT HELLO WORLD");
+		Manager.persist(p);
+		
+		List<Object> results = Manager.queryDB("FETCH " + p.getClass().getCanonicalName());
+		assertTrue(results.size() == 1);
+		
+		String s = (String) Manager.getField(p.getClass().getName(), 100, "pString");
+		Assert.assertTrue(s.equals("NOT HELLO WORLD"));
 	}
 }

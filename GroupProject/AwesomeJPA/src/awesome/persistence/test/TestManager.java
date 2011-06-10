@@ -24,8 +24,10 @@ import awesome.persistence.manager.PropertiesException;
  */
 public class TestManager {
 
-	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesome.properties";
-	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesomeInvalid.properties";
+	//private String propertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesome.properties";
+	private String propertiesPath = "src/awesome/persistence/test/awesome.properties";
+	//private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesomeInvalid.properties";
+	private String invalidPropertiesPath = "src/awesome/persistence/test/awesomeInvalid.properties";
 
 	/**
 	 * Deletes the database file for each test run.
@@ -33,6 +35,7 @@ public class TestManager {
 	 */
 	@Before
 	public void setUp() throws Exception{
+		System.out.println("\n\n");
 		// Create file obj for the database file
 		File f = new File("test.db");
 		// counter for delete count
@@ -63,7 +66,7 @@ public class TestManager {
 	/**
 	 * Tests the setting of the properties file with a valid file.
 	 * @throws PropertiesException If the properties are malformed
-	 * @throws IOException If the file could not be accessed
+	 * @throws IOException If the file could noawesome/persistence/test/t be accessed
 	 */
 	@Test
 	public void testSetPropertiesValid() throws IOException, PropertiesException{
@@ -98,6 +101,7 @@ public class TestManager {
 	 */
 	@Test
 	public void testPersist() throws Exception{
+		System.out.println("TP");
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
@@ -115,6 +119,7 @@ public class TestManager {
 		
 		Primatives res = (Primatives) results.get(0);
 		assertTrue(res.getPInt() == 100);
+		assertTrue(res.getPString().equals("HELLO WORLD"));
 
 	}
 	
@@ -194,7 +199,7 @@ public class TestManager {
 	 */
 	@Test
 	public void testComplexObject() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
-		System.out.println("\n\n");
+		
 		
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();

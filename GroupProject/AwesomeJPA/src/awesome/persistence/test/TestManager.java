@@ -27,49 +27,75 @@ public class TestManager {
 	private String propertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesome.properties";
 	private String invalidPropertiesPath = "C:/Users/Ferg/Desktop/OO/GroupProject/AwesomeJPA/src/awesome/persistence/test/awesomeInvalid.properties";
 
+	/**
+	 * Deletes the database file for each test run.
+	 * @throws Exception If the database could not be deleted
+	 */
 	@Before
-	public void setUp(){
+	public void setUp() throws Exception{
+		// Create file obj for the database file
 		File f = new File("test.db");
+		// counter for delete count
+		int i = 0;
 		
+		// while the file exisits try to delete it
 		while(f.exists()){
-			f.delete();
+			// attempt to delete the file
+			if(f.delete())
+				break;
+			
+			// increment counter
+			i++;
+			// sleep for a bit for handles to be released
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+			// Delete limit reached throw exception
+			if(i > 10){
+				throw new Exception("Could not delete DB");
+			}
 		}
 		
 	}
 	
+	/**
+	 * Tests the setting of the properties file with a valid file.
+	 * @throws PropertiesException If the properties are malformed
+	 * @throws IOException If the file could not be accessed
+	 */
 	@Test
-	public void testConstructor(){
-		System.out.println(Primatives.class.getName());
-		System.out.println(Complex.class.getName());
-		try {
-			Manager.setProperties(propertiesPath);
-		} catch (IOException e) {
-			e.printStackTrace();
-			fail();
-		} catch (PropertiesException e) {
-			e.printStackTrace();
-			fail();
-		}
+	public void testSetPropertiesValid() throws IOException, PropertiesException{
+		// Attempt to set properties, fail if any expception thrown
+		Manager.setProperties(propertiesPath);
 	}
 	
+	/**
+	 * Tests the set properties with an invalid filename
+	 * @throws IOException Should be thrown
+	 * @throws PropertiesException Should not be thrown
+	 */
 	@Test(expected=IOException.class)
-	public void testConstructorNoFile() throws IOException, PropertiesException{
+	public void testSetPropertiesNoFile() throws IOException, PropertiesException{
 		Manager.setProperties("awesome.propertiesNOFILE");
 		
 	}
 	
+	/**
+	 * Tests the setting of the properties with an invalid properties file
+	 * @throws IOException Should not be thrown
+	 * @throws PropertiesException Should be thrown
+	 */
 	@Test(expected=PropertiesException.class)
-	public void testConstructorEmptyFile()throws IOException, PropertiesException{
+	public void testSetPropertiesEmptyFile()throws IOException, PropertiesException{
 		Manager.setProperties(invalidPropertiesPath);
 	}
 	
+	/**
+	 * Tests the persisting and retrieving of the primitive object from the database
+	 * @throws Exception
+	 */
 	@Test
 	public void testPersist() throws Exception{
 		Manager.setProperties(propertiesPath);
@@ -85,14 +111,21 @@ public class TestManager {
 
 		List<Object> results = Manager.queryDB("FETCH " + p.getClass().getName());
 		
-		for(int index = 0; index < results.size(); index++){
-			Primatives res = (Primatives) results.get(index);
-			System.out.println(res.getPString());
-		}
+		assertTrue(results.size() == 1);
 		
-		System.out.println(results.size());
+		Primatives res = (Primatives) results.get(0);
+		assertTrue(res.getPInt() == 100);
+
 	}
 	
+	/**
+	 * Tests the getting of individual fields from an object in the database
+	 * @throws IOException
+	 * @throws PropertiesException
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 */
 	@Test
 	public void testGetField() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
 		Manager.setProperties(propertiesPath);
@@ -120,8 +153,21 @@ public class TestManager {
 		
 		float f = (Float) Manager.getField(p.getClass().getName(), 1, "pFloat");
 		Assert.assertTrue(f == new Float(0.1));
+		
+		char c = (Character) Manager.getField(p.getClass().getName(), 1, "pChar");
+		
+		assertTrue(c == 'c');
 	}
 	
+	/**
+	 * Tests the deletion of objects from the database. 
+	 * 
+	 * @throws IOException
+	 * @throws PropertiesException
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 */
 	@Test
 	public void testDelete() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
 		Manager.setProperties(propertiesPath);
@@ -138,8 +184,18 @@ public class TestManager {
 		Assert.assertTrue(Manager.deleteFromDb(p));
 	}
 	
+	/**
+	 * Tests the storing and retrieving of a complex plojo from the database.
+	 * @throws IOException
+	 * @throws PropertiesException
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 */
 	@Test
 	public void testComplexObject() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
+		System.out.println("\n\n");
+		
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
@@ -153,6 +209,9 @@ public class TestManager {
 		c.setPrim(p);
 		c.setMyString("HELLO ALL");
 		c.setMyInt(100);
+		
 		Manager.persist(c);
+		Primatives prims = (Primatives) Manager.getField(c.getClass().getCanonicalName(), c.getMyString(), "prim");
+		assertTrue(prims.getPInt() == 100);
 	}
 }

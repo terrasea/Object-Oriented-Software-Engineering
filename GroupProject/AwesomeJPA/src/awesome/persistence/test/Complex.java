@@ -1,9 +1,14 @@
 package awesome.persistence.test;
 
-public class Complex {
+import awesome.persistence.annotations.Basic;
+import awesome.persistence.annotations.ID;
 
+public class Complex {
+	@Basic
 	private int myInt;
+	@ID
 	private String myString;
+	@Basic
 	private Primatives prim;
 	
 	public Complex(){}

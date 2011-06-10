@@ -197,6 +197,8 @@ public class Manager {
 			}
 		}
 
+		insertSql.delete(insertSql.length()-2, insertSql.length());
+		valsBuilder.delete(valsBuilder.length() - 2, valsBuilder.length());
 		// Finish of sql string
 		insertSql.append(") ");
 		valsBuilder.append(" ) ");

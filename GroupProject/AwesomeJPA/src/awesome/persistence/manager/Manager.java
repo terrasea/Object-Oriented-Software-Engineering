@@ -505,6 +505,36 @@ public class Manager {
 		}else{
 			primaryKeyString = primaryKey.toString();
 		}
+		
+OneToMany o2m = dataField.getAnnotation(OneToMany.class);
+		
+		
+		if(o2m != null) {
+			Class<?> target = o2m.mappedBy();
+			String targetFK = null;
+			for(Field field: target.getDeclaredFields()) {
+				ManyToOne m2o = field.getAnnotation(ManyToOne.class);
+				if(m2o != null && m2o.target().equals(target)) {
+					targetFK = field.getName();
+				}
+			}
+			try {
+				String query = String.format("FETCH %s WHERE %s='%s'", target.getName(), targetFK, primaryKey);
+				List<Object> entities = Manager.queryDB(query);
+				
+				//ArrayList<Object> tmp = entities;
+				
+				//return list of objects as a array 
+				return entities;
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (AQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		// Create SQL
 		String sql = "SELECT " + fieldName + " FROM " + className.replace(".","_") + " WHERE " + primaryKeyField.getName() +  " = " + primaryKeyString;
 

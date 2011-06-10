@@ -2,6 +2,7 @@ package entity;
 
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
+import awesome.persistence.annotations.ManyToOne;
 
 public class Coffee {
 //	@ID
@@ -53,5 +54,20 @@ public class Coffee {
 	
 	public void setMilk(boolean milk) {
 		this.milk = milk;
+	}
+	
+	
+	@ManyToOne(target = Test.class)
+	Test test;
+	
+	
+	public Test getTest() {
+		return test;
+	}
+	
+	
+	
+	public void setTest(Test test) {
+		this.test = test;
 	}
 }

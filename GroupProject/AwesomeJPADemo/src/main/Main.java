@@ -31,6 +31,7 @@ public class Main {
 		LazyInitAgent agent = new LazyInitAgent();
 		agent.addEntity("Coffee");
 		agent.addEntity("Tea");
+		agent.addEntity("Test");
 		Transformer.addTransformer(agent);
 		try {
 			Transformer.startAgent();
@@ -40,11 +41,15 @@ public class Main {
 		}
 
 		Test t = new Test();
+		Coffee coffee = new Coffee();
+		coffee.setName("Long black");
+		coffee.setStrength(5);
+		coffee.setMilk(true);
 		try {
-			Field f = t.getClass().getDeclaredField("list");
+			Field f = t.getClass().getDeclaredField("coffees");
 			f.setAccessible(true);
-			List<Object> l = new LinkedList<Object>();
-			l.add("Hello");
+			List<Coffee> l = new LinkedList<Coffee>();
+			l.add(coffee);
 			Collection c = ((Collection)f.get(t));
 			if (c != null) {
 				c.addAll(l);
@@ -60,10 +65,7 @@ public class Main {
 
 		try {
 			Manager.setProperties(propertiesPath);
-			Coffee coffee = new Coffee();
-			coffee.setName("Long black");
-			coffee.setStrength(5);
-			coffee.setMilk(true);
+			
 
 			Tea tea = new Tea();
 			tea.setName("Earl gray");
@@ -72,7 +74,8 @@ public class Main {
 
 			Manager.persist(coffee);
 			Manager.persist(tea);
-
+			Manager.persist(t);
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -95,8 +98,6 @@ public class Main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("List: " + t.getList());
-		System.out.println("Name: " + t.getName());
 		System.out.println("Coffee");
 		List<Object> results = null;
 		try {

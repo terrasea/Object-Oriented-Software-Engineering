@@ -1,7 +1,5 @@
 package awesome.persistence.agent;
 
-import java.util.HashMap;
-
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -9,8 +7,6 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
-import awesome.persistence.manager.Manager;
 
 public class LazyInitAdaptor extends ClassAdapter {
 
@@ -55,9 +51,7 @@ public class LazyInitAdaptor extends ClassAdapter {
 		return mv;
 	}
 
-	private String getEntityType(String name) {
-		return "Ljava/lang/Integer;";
-	}
+
 
 	
 

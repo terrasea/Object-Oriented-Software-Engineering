@@ -1,10 +1,7 @@
 package main;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import awesome.persistence.agent.AgentException;
@@ -26,7 +23,6 @@ public class Main {
 	/**
 	 * @param args
 	 */
-	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		LazyInitAgent agent = new LazyInitAgent();
 		agent.addEntity("Coffee");

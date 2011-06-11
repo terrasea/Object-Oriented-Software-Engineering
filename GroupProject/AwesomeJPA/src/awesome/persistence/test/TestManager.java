@@ -397,4 +397,9 @@ public class TestManager {
 		
 		assertTrue(Manager.deleteFromDb(dobj));
 	}
+	
+	@Test
+	public void oneToManyTest() throws IOException, PropertiesException{
+		Manager.setProperties(propertiesPath);
+	}
 }

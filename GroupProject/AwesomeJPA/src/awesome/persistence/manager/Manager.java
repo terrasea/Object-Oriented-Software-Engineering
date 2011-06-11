@@ -15,6 +15,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import awesome.persistence.agent.AgentException;
+import awesome.persistence.agent.LazyInitAgent;
+import awesome.persistence.agent.Transformer;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 import awesome.persistence.annotations.ManyToOne;
@@ -51,7 +54,7 @@ public class Manager {
 			throw new PropertiesException("Invalid properties file provided.");
 		}
 		
-		/*try {
+		try {
 			LazyInitAgent clt = new LazyInitAgent();
 			String[] entities = properties.getProperty("entities").split(";");
 			for(String entity: entities) {
@@ -62,7 +65,7 @@ public class Manager {
 		} catch (AgentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 	}
 
 	

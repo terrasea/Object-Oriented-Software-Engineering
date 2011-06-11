@@ -1,9 +1,7 @@
 package awesome.persistence.agent;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Collections;
 
 import awesome.persistence.annotations.ID;
 import awesome.persistence.manager.EntityException;

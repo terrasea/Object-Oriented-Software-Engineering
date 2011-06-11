@@ -8,8 +8,6 @@ import java.util.HashSet;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import awesome.persistence.manager.Manager;
-
 
 
 
@@ -32,7 +30,6 @@ public class LazyInitAgent implements ClassFileTransformer {
 		ClassWriter cw = new ClassWriter(cr, 0);
 		String[] tmp = className.split("/");
 		if( entities.contains(tmp[tmp.length-1]) ) {
-			//System.out.println("Lazy Init Agent " + className);// + Manager.isEntity(className));
 			cr.accept(new LazyInitAdaptor(cw), 0);
 			return cw.toByteArray();
 		}

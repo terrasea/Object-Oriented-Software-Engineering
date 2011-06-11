@@ -54,13 +54,15 @@ public class Manager {
 			throw new PropertiesException("Invalid properties file provided.");
 		}
 		
+		LazyInitAgent clt = new LazyInitAgent();
+		String[] entities = properties.getProperty("entities").split(";");
+		for(String entity: entities) {
+			clt.addEntity(entity);
+		}
+		Transformer.addTransformer(clt);
+		
 		try {
-			LazyInitAgent clt = new LazyInitAgent();
-			String[] entities = properties.getProperty("entities").split(";");
-			for(String entity: entities) {
-				clt.addEntity(entity);
-			}
-			Transformer.addTransformer(clt);
+			
 			Transformer.startAgent();
 		} catch (AgentException e) {
 			// TODO Auto-generated catch block

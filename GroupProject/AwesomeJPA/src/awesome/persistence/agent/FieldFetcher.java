@@ -10,6 +10,7 @@ import awesome.persistence.manager.Manager;
 public class FieldFetcher {
 	@SuppressWarnings("unchecked")
 	public static <C> void set(C klass, String field) throws Exception {
+		System.out.println("Getting field " + field + " for entity " + klass);
 		Field fieldID = klass.getClass().getDeclaredField(field);
 		String table = klass.getClass().getName();//.replace('$', '_').replace('.','_');
 		//String table = tmpArray[tmpArray.length - 1];
@@ -23,6 +24,7 @@ public class FieldFetcher {
 			if(f.isAnnotationPresent(ID.class)) {
 				f.setAccessible(true);
 				id = f.get(klass);
+				
 			}
 		}
 		

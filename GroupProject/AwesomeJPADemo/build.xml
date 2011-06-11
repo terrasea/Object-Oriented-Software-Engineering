@@ -11,7 +11,7 @@
 	<!-- Main, Premain and Agentmain Classes defined here -->
 	<property name="agent.main" value="main.Main" />
 	<property name="agent.premain" value="awesome.persistence.agent.Transformer" />
-	<property name="agent.agentmain" value="awesome.persistence.agent.Transformer" />
+	<property name="agent.agentmain" value="${agent.main}" />
 	<property name="jar.classpath" value="${lib.dir}/AwesomeJPA.jar ${lib.dir}/asm-4.0_RC1.jar ${lib.dir}/sqlitejdbc-v056.jar ${java.home}/../lib/tools.jar ${lib.dir}/sqlitejdbc-v056.jar" />
 
 	<path id="project.class.path">

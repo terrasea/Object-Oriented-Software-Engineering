@@ -1,5 +1,7 @@
 package awesome.persistence.agent;
 
+import java.util.HashSet;
+
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -12,9 +14,11 @@ public class LazyInitAdaptor extends ClassAdapter {
 
 	private String owner;
 	private boolean isEntity;
-
-	public LazyInitAdaptor(ClassVisitor cv) {
+	HashSet<String> entities;
+	
+	public LazyInitAdaptor(ClassVisitor cv, HashSet<String> entities) {
 		super(cv);
+		this.entities = entities;
 	}
 
 	@Override
@@ -22,7 +26,8 @@ public class LazyInitAdaptor extends ClassAdapter {
 			String superName, String[] interfaces) {
 		cv.visit(version, access, name, signature, superName, interfaces);
 		owner = name;
-		isEntity = true;//Manager.isEntity(name);
+		isEntity = entities.contains(name.replace('/', '.'));//Manager.isEntity(name);
+		System.out.println("Entity? " + name + "=" + isEntity);
 	}
 
 	@Override

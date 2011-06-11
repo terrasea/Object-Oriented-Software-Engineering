@@ -116,7 +116,7 @@ public class TestManager {
 		p.setPInt(100);
 		p.setPString("HELLO WORLD");
 		
-		Manager.persist(p);
+		Manager.persist(p, false);
 
 		List<Object> results = Manager.queryDB("FETCH " + p.getClass().getName());
 		
@@ -215,7 +215,7 @@ public class TestManager {
 		c.setMyString("HELLO ALL");
 		c.setMyInt(100);
 		
-		Manager.persist(c);
+		Manager.persist(c, false);
 		Primatives prims = (Primatives) Manager.getField(c.getClass().getCanonicalName(), c.getMyString(), "prim");
 		assertTrue(prims.getPInt() == 100);
 	}
@@ -239,7 +239,7 @@ public class TestManager {
 		
 		c.setName("Strong");
 		
-		Manager.persist(c);
+		Manager.persist(c, false);
 		
 		List<Object> results = Manager.queryDB("FETCH " + c.getClass().getCanonicalName());
 		
@@ -387,7 +387,7 @@ public class TestManager {
 		dobj.setDate(d);
 		dobj.setSomeInteger(100000);
 		
-		Manager.persist(dobj);
+		Manager.persist(dobj, false);
 		
 		List<Object> results = Manager.queryDB("FETCH " + dobj.getClass().getCanonicalName());
 		

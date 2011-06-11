@@ -17,6 +17,7 @@ public class LazyInitAgent implements ClassFileTransformer {
 	
 	
 	public void addEntity(String name) {
+		System.out.println("adding " + name);
 		entities.add(name);
 	}
 	
@@ -28,13 +29,14 @@ public class LazyInitAgent implements ClassFileTransformer {
 		
 		ClassReader cr = new ClassReader(b);
 		ClassWriter cw = new ClassWriter(cr, 0);
-		String klassName = className.replace("/", ".");
-		if( entities.contains(klassName)) {
-			cr.accept(new LazyInitAdaptor(cw), 0);
+		//String klassName = className.replace("/", ".");
+		//if( entities.contains(klassName)) {
+		//	System.out.println("transforming class " + klassName);
+			cr.accept(new LazyInitAdaptor(cw, entities), 0);
 			return cw.toByteArray();
-		}
+		//}
 		
-		return null;
+		//return null;
 	}
 
 	

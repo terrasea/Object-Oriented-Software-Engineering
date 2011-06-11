@@ -54,12 +54,31 @@ public class Manager {
 			throw new PropertiesException("Invalid properties file provided.");
 		}
 		
-		LazyInitAgent clt = new LazyInitAgent();
+//		LazyInitAgent clt = new LazyInitAgent();
 		String[] entities = properties.getProperty("entities").split(";");
 		for(String entity: entities) {
-			clt.addEntity(entity);
+			try {
+				Class<?> c = Class.forName(entity);
+				Manager.createTable(c);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (EntityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+//			clt.addEntity(entity);
 		}
-		Transformer.addTransformer(clt);
+//		Transformer.addTransformer(clt);
+		
+		if(properties.containsKey("agentjar")) {
+			String jarname = properties.getProperty("agentjar");
+			Transformer.setAgentJar(jarname);
+		}
 		
 		try {
 			
@@ -86,50 +105,63 @@ public class Manager {
 	 */
 	@SuppressWarnings("unchecked")
 	private static <E> void handleOneToMany(Field f, E entity) throws NotAEntity, SQLException, EntityException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		// we know field has OneToMany annotation
+		// we are trying to find out what the foreign key 
+		// of the other referenced entity references this entity
+		//OneToMany o2m = f.getAnnotation(OneToMany.class);
+		//make the private accessable to us
 		f.setAccessible(true);
-		Collection<Object> objs = null;
+		String fieldName = null;
 		try {
-			objs = (Collection<Object>) f.get(entity);
+			//we know it's a Collection of some sort (we hope)
+			Collection<?> list = (Collection<?>)f.get(entity);
+			//check to see if it has any elements
+			if(!list.isEmpty()) {
+				//find out which one has the ManyToOne annotation and make sure it's mapped to us
+				Object tmp = list.toArray()[0];
+				//assume it's the right type
+				// find out which field reffers to us
+				for(Field field: tmp.getClass().getDeclaredFields()) {
+					//check to see if contains the same type as us
+					field.setAccessible(true);
+					Object tmp2 = field.get(tmp);
+					if(tmp2 != null) {
+						if(tmp2.getClass().getName().equals(entity.getClass().getName())) {
+							fieldName = field.getName();
+						}
+					}
+				}
+			}
+			for(Object obj2: list) {
+				Field field = null;
+				field = obj2.getClass().getDeclaredField(fieldName);
+				field.setAccessible(true);
+				field.set(obj2, entity);
+				Manager.persist(obj2, true);
+			}
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotAEntity e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (EntityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		if(objs == null) {
-			return;
-		}
-		Object obj = objs.size() > 0 ? objs.toArray()[0] : null;
-		String objName = null;
-		if(obj != null) {
-			for(Field field: obj.getClass().getDeclaredFields()) {
-				field.setAccessible(true);
-				ManyToOne mm2o = field.getAnnotation(ManyToOne.class);
-				try {
-					if(mm2o != null && field.get(entity).getClass().getName().equals(mm2o.target().getName())) {
-						objName = field.getName();
-						System.out.println("Name retrieved");
-					}
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-			}
-		}
-		System.out.println("One to many before loop");
-		for(Object obj2: objs) {
-			Field field = null;
-			field = obj2.getClass().getDeclaredField(objName);
-			field.setAccessible(true);
-			field.set(obj2, entity);
-			System.out.println("One to many add: "+ field.get(obj2));
-			Manager.persist(obj2);
-		}
+
 	}
 	
 	
@@ -146,21 +178,16 @@ public class Manager {
 			return;
 		}
 		pkfield.setAccessible(true);
-		System.out.println("1 Entity in many to one = " + entity + ", " + pkfield.getName());
-		Object tmp = pkfield.getInt(fkObject);
-		System.out.println("1a Entity in many to one = " + entity + ", " + pkfield.getName());
+		Object tmp = pkfield.get(fkObject);
 		if(tmp != null) {
-			System.out.println("2 Entity in many to one = " + entity + ", " + pkfield.getName());
 			String type = tmp.getClass().getCanonicalName();
 			if (type.equals("java.lang.String")) {
 				String s = (String) tmp;
-				valsList.add("'" + s + "'");
+				valsList.add(s);
 				
 			} else if (type.equals("int")) {
-				System.out.println("3 Entity in many to one = " + entity + ", " + pkfield.getName());
 				Integer i = (Integer) tmp;
 				valsList.add(i.toString());
-				System.out.println("4 Entity in many to one = " + entity + ", " + pkfield.getName());
 			} else if (type.equals("boolean")) {
 				Boolean b = (Boolean) tmp;
 				if (b)
@@ -184,6 +211,9 @@ public class Manager {
 		}
 	}
 	
+	public static void persist(Object entity) throws NotAEntity, SQLException, EntityException {
+		Manager.persist(entity, false);
+	}
 	
 	
 	/**
@@ -193,10 +223,9 @@ public class Manager {
 	 *            The entity to store in the database
 	 * @throws EntityException
 	 */
-	public static void persist(Object entity) throws NotAEntity, SQLException, EntityException {
+	public static void persist(Object entity, boolean cyclic) throws NotAEntity, SQLException, EntityException {
 		// Get the class of the object
 		Class<? extends Object> c = entity.getClass();
-
 		// Test if the provided class is valid
 		if (!isEntity(c)){
 			throw new NotAEntity("Not in the list of entities to persist - " + entity.getClass().getName());
@@ -204,14 +233,14 @@ public class Manager {
 		
 		// If a table does not exist create it
 		if(!doesTableExist(c.getName().replace('$', '_').replace('.','_') )){
-			createTable(entity.getClass());				
+			createTable(entity.getClass());
 		}
 
 		// Flag to to signal if the command will be an update or insert
 		boolean updating = false;
 		
 		// Test if the object exists in the database
-		if(isPersisted(entity)){
+		if(isPersisted(entity) && !isSame(entity) && !cyclic){
 			updating = true;
 		}
 		
@@ -227,7 +256,6 @@ public class Manager {
 		// Loop over all fields and build sql string, not processing last index
 		// Because it is always a reference to itself
 		for(int fieldsIndex = 0; fieldsIndex < fields.length; fieldsIndex++){
-			System.out.println("" + fieldsIndex + ": " + fields[fieldsIndex].getName());
 			// Get current field
 			Field f = fields[fieldsIndex];
 			
@@ -262,7 +290,7 @@ public class Manager {
 			}
 			
 			// If not basic then dont process field
-			if(!basic && !pk && !m2o || o2m){
+			if(!basic && !pk && !m2o && !o2m){
 				continue;
 			}
 			
@@ -278,7 +306,7 @@ public class Manager {
 				f.setAccessible(true);
 				if (type.equals("java.lang.String")) {
 					String s = (String) f.get(entity);
-					valsList.add("'" + s + "'");
+					valsList.add(s);
 				}else if(type.equals("java.util.Date")){
 					Date d = (Date) f.get(entity);
 					valsList.add(Long.toString(d.getTime()));
@@ -304,27 +332,29 @@ public class Manager {
 					
 				} else if (type.equals("char")) {
 					Character ch = (Character) f.get(entity);
-					valsList.add("'" + ch.toString() + "'");
+					valsList.add(ch.toString());
 					
 				} else {
 					
 					if(o2m) {
+						if(cyclic) {
+							continue;
+						}
 						Manager.handleOneToMany(f, entity);
-						System.out.println("One to many");
 						continue;
-					} else if(m2o) {
+					} else if(m2o &&!cyclic) {
+						
 						Manager.handleManyToOne(f, valsList, entity);
-						System.out.println("Many to one");
 					}
-					System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 					// Set field to be accessable
 					f.setAccessible(true);
 					// Get the object
 					Object plojo = f.get(entity);
-					if(plojo != null) {
-						System.out.println("Manager.persist plojo");
+					if(plojo != null && !isPersisted(plojo)) {
 						// Store it in the database
-						persist(plojo);
+						if(!cyclic) {
+							persist(plojo);
+						}
 					} else {
 						continue;
 					}
@@ -363,11 +393,13 @@ public class Manager {
 			sql.append("UPDATE " + c.getName().replace('$', '_').replace('.', '_'));
 			sql.append(" SET ");
 			
+			
+			
 			// add  setting fields
-			for(int index = 0; index < nameList.size(); index++){
-				sql.append(nameList.get(index) + " = " + valsList.get(index));
+			for(int index = 0; index < nameList.size() && index < valsList.size(); index++){
+				sql.append("'" + nameList.get(index) + "' = '" + valsList.get(index) + "'");
 				
-				if(index != nameList.size() - 1)
+				if(index != nameList.size() - 1 &&  index != valsList.size() - 1)
 					sql.append(",");
 			}
 			
@@ -391,32 +423,34 @@ public class Manager {
 				throw new EntityException("Could not access primary key for entity - " + c.getCanonicalName());
 			}
 			// add primary key value to where clause
-			sql.append(val.toString());
-			
-		}else{
+			sql.append("'" + val.toString() + "'");
+		}else if(!cyclic || !isPersisted(entity)){
 			// build insert statement
+//			sql.append("INSERT INTO " + c.getName().replace('$', '_').replace('.', '_'));
 			sql.append("INSERT INTO " + c.getName().replace('$', '_').replace('.', '_') + " ( ");
 			// Loop over name list
-			for(int index = 0; index < nameList.size(); index++){
+			for(int index = 0; index < nameList.size() && index < valsList.size(); index++){
 				sql.append(nameList.get(index));
 				
-				if(index != nameList.size() - 1)
+				if(index != nameList.size() - 1 &&  index != valsList.size() - 1)
 					sql.append(",");
 			}
 			// add values
 			sql.append(") VALUES (");
+//			sql.append(" VALUES (");
 			// Loop over values list
-			for(int index = 0; index < valsList.size(); index++){
-				sql.append(valsList.get(index));
+			for(int index = 0; index < nameList.size() && index < valsList.size(); index++){
+				sql.append("'"+valsList.get(index)+"'");
 				
 				if(index != valsList.size() - 1)
 					sql.append(",");
 			}
 			// finish SQL
 			sql.append(")");
+		} else {
+			return;
 		}
 		// Print sql
-		System.out.println(sql.toString());
 		
 		// Get connection to the database
 		Connection dbcon = getConnection();
@@ -431,6 +465,39 @@ public class Manager {
 		stmt.close();
 		dbcon.close();
 	}
+
+	private static boolean isSame(Object obj) throws EntityException {
+		try {
+			// Get the primary key for the object
+			Field pk = getPrimaryKeyField(obj.getClass());
+			// set the field to be accessible
+			pk.setAccessible(true);
+			// get the primary key field for the object
+			Object res = getField(obj.getClass().getCanonicalName(), pk.get(obj) ,pk.getName());
+			
+			// if there is a primary key then the object is already persisted
+			if(res != null) {
+				List<Object> tmp = queryDB("FETCH " + obj.getClass().getName() + " WHERE " + pk.getName() + "=" +pk.get(obj));
+				Object tmp2 = !tmp.isEmpty() ? tmp.get(0) : null;
+				for(Field field : obj.getClass().getDeclaredFields()) {
+					field.setAccessible(true);
+					Field field2 = tmp2.getClass().getDeclaredField(field.getName());
+					field2.setAccessible(true);
+					if(!field.get(obj).equals(field2.get(tmp2))) {
+						return false;
+					}
+				}
+				return true;
+			}
+			
+			// Object not persisted
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new EntityException("Could not determine id entity was persited.");
+		}
+	}
+
 
 	/**
 	 * Tests if an object has already been stored in the database, by checking if the primary
@@ -474,7 +541,6 @@ public class Manager {
 	 */
 	public static List<Object> queryDB(String query) throws AQLException,
 			SQLException, EntityException {
-
 		// split on white spaces
 		String[] args = query.split(" ");
 		
@@ -510,21 +576,32 @@ public class Manager {
 		StringBuilder sql = new StringBuilder("SELECT " + pid + " FROM " + args[1].replace("$", "_").replace(".", "_"));
 
 		for(int index = 2; index < args.length; index++){
-			sql.append(" " + args[index]);
+			if(args[index].contains("=")) { 
+				String[] tmp = args[index].split("=");
+				if(tmp.length == 2) {
+					sql.append(" " + tmp[0] + "=" + "'" + tmp[1] + "'");
+				}
+			} else {
+				sql.append(" " + args[index] + " ");
+			}
 		}
+		
+		
 		// Get database connection
 		Connection dbcon = getConnection();
-
 		// Get statement from connection
 		Statement stmt = dbcon.createStatement();
-
-		System.out.println(sql.toString());
 		// Execute the query
 		ResultSet res = stmt.executeQuery(sql.toString());
-
 		// Create return list
 		List<Object> resultList = new ArrayList<Object>();
 
+		if(res == null) {
+			stmt.close();
+			dbcon.close();
+			
+			return null;
+		}
 		// Loop over sql results
 		while (res.next()) {
 
@@ -572,12 +649,10 @@ public class Manager {
 			}else if(type.equals("char")){
 				val = res.getString(primaryKey.getName()).charAt(0);
 			}else{
-				System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + type);
 				continue;
 			}
 
 			primaryKey.setAccessible(true);
-			
 			try {
 				primaryKey.set(result, val);
 			} catch (Exception e) {
@@ -593,7 +668,6 @@ public class Manager {
 			// Add result to result list
 			resultList.add(result);
 		}
-
 		// Clean up
 		stmt.close();
 		dbcon.close();
@@ -613,8 +687,7 @@ public class Manager {
 	 * @throws EntityException
 	 *             If there was an error processing the entity
 	 */
-	public static Object getField(String className, Object primaryKey, String fieldName) throws SQLException, EntityException{
-		
+	public static Object getField(String className, Object primaryKey, String fieldName) throws EntityException{
 		// Get the class of the object
 		Class<? extends Object> classN;
 		try {
@@ -656,27 +729,18 @@ public class Manager {
 			primaryKeyString = primaryKey.toString();
 		}
 		
-		System.out.println(dataField.getName());
 		OneToMany o2m = dataField.getAnnotation(OneToMany.class);
-		System.out.println(o2m);
 		
 		if(o2m != null) {
 			Class<?> target = o2m.mappedBy();
-			System.out.println(target.getName());
 			String targetFK = null;
 			for(Field field: target.getDeclaredFields()) {
-				System.out.println("field: " + field.getName());
 				ManyToOne m2o = field.getAnnotation(ManyToOne.class);
-				if(m2o != null) {
-					System.out.println("Target: " + m2o.target() + ", " + classN);
-				}
 				try {
 					
 					if(m2o != null && m2o.target().equals(classN)) {
 						targetFK = field.getName();
 						
-						//Object coll = dataField.get(classN);
-						//System.out.println(coll);
 						break;
 					}
 				} catch (IllegalArgumentException e) {
@@ -685,12 +749,10 @@ public class Manager {
 				}
 			}
 			if(targetFK == null) {
-				System.out.println("targetFK is null");
 				return null;
 			}
 			try {
 				String query = String.format("FETCH %s WHERE %s='%s'", target.getName(), targetFK, primaryKey);
-				System.out.println(query);
 				List<Object> entities = Manager.queryDB(query);
 				
 				//ArrayList<Object> tmp = entities;
@@ -703,31 +765,41 @@ public class Manager {
 			} catch (AQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
 			}
 		}
 		
 		// Create SQL
 		String sql = "SELECT " + fieldName + " FROM " + className.replace(".","_") + " WHERE " + primaryKeyField.getName() +  " = " + primaryKeyString;
 
-		System.out.println(sql);
 		
 		// Get database connection
-		Connection dbcon = getConnection();
+		Connection dbcon = null;
+		Statement stmt = null;
+		ResultSet res = null;
+		try {
+			dbcon = getConnection();
+			// Get statement from the database connection
+			stmt = dbcon.createStatement();
 
-		// Get statement from the database connection
-		Statement stmt = dbcon.createStatement();
+			// Execute the query on the database
+			res = stmt.executeQuery(sql);
 
-		// Execute the query on the database
-		ResultSet res = stmt.executeQuery(sql);
-
-		// If there is no result, return null
-		if (!res.next()) {
-			// Clean up
-			stmt.close();
-			dbcon.close();
-			System.out.println("Nothing to fetch field from db - " + fieldName);
-			return null;
+			// If there is no result, return null
+			if (!res.next()) {
+				// Clean up
+				stmt.close();
+				dbcon.close();
+				return null;
+			}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
+
+
 
 		// Get type of field
 		String returnType = dataField.getType().getCanonicalName();
@@ -738,9 +810,12 @@ public class Manager {
 		// Attempt to get object from sql results
 		try{
 			out = getObjFromRes(res, fieldName, returnType);
+			if(Date.class.getName().equals(returnType)) {
+				out = new Date((Long)out);
+			}
+			
 		}catch(Exception nonPrimative){
 			// The result is not a primitive
-			System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + returnType);
 			
 			// Create new instance of the field type
 			try {
@@ -765,8 +840,13 @@ public class Manager {
 		}
 
 		// Clean up
-		stmt.close();
-		dbcon.close();
+		try {
+			stmt.close();
+			dbcon.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+		}
+		
 		return out;
 	}
 
@@ -779,7 +859,9 @@ public class Manager {
 	 * @throws Exception
 	 */
 	private static Object getObjFromRes(ResultSet res,String fieldName , String type) throws Exception{
-		if (type.equals("java.lang.String")) {
+		if(type.equals("java.util.Date")) {
+			return res.getLong(fieldName);
+		} else if (type.equals("java.lang.String")) {
 			return res.getString(fieldName);
 		} else if (type.equals("int")) {
 			return res.getInt(fieldName);
@@ -875,7 +957,6 @@ public class Manager {
 		
 		// Build the SQL string
 		String sql = "DELETE FROM " + className.replace(".","_") + " WHERE " + primaryKey.getName()+ " = " + primaryKeyString;
-		System.out.println(sql);
 		
 		// Get connection to the database
 		Connection dbcon = getConnection();
@@ -995,8 +1076,11 @@ public class Manager {
 			try {
 				type = convertToSqlType(  f.getType().getCanonicalName());
 			} catch (Exception e) {
-				System.out.println("OBJECT TYPE IS NOT PRIMATIVE - " + f.getType().getCanonicalName());
-				createTable(f.getType());
+				try {
+					createTable(f.getType());
+				} catch(Exception ex) {
+					//don't care
+				}
 				
 				Field foreignKey = getPrimaryKeyField(f.getType());
 				foreignKeys.append(", FOREIGN KEY (" + f.getName() + ") REFERENCES " + f.getType().getCanonicalName().replace('.', '_').replace('$','_') );
@@ -1018,7 +1102,6 @@ public class Manager {
 		// Finish SQL
 		sql.append(foreignKeys.toString() + ")");
 		
-		System.out.println(sql.toString());
 		
 		// Get database connection
 		Connection dbcon;

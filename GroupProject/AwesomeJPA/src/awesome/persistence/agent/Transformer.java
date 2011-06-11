@@ -38,7 +38,7 @@ public abstract class Transformer {
 	public static void premain(String agentArgs, Instrumentation inst) {
 		if (!agentRunning) {
 			agentRunning = true;
-			
+			System.out.println("Starting agent");
 			for (ClassFileTransformer trans : transformers) {
 				inst.addTransformer(trans);
 			}
@@ -124,10 +124,16 @@ public abstract class Transformer {
 
 	private static final String CLASS_PATH = System.getProperty("java.class.path");
 
-	private static final String INSTR_JAR_NAME = "AwesomeJPA.jar";
+	private static String agentjar = "AwesomeJPA.jar";
 
 	private static final String OS_NAME = System.getProperty("os.name");
 
+	
+	public static void setAgentJar(String jarname) {
+		agentjar = jarname;
+	}
+	
+	
 	public static void startAgent() throws AgentException {
 		if (!agentRunning) {
 			try {
@@ -137,7 +143,7 @@ public abstract class Transformer {
 				String agentPath = null;
 				for (String entry : CLASS_PATH.split(splitter)) {
 					System.out.println("Entry: " + entry);
-					if (entry.toLowerCase().endsWith(INSTR_JAR_NAME.toLowerCase())) {
+					if (entry.toLowerCase().endsWith(agentjar.toLowerCase())) {
 						agentPath = entry;
 						break;
 					}
@@ -147,7 +153,7 @@ public abstract class Transformer {
 					vm.loadAgent(agentPath);
 					
 				}else {
-					throw new AgentException(String.format("Agent jar file starting with %s not in Classpath", INSTR_JAR_NAME));
+					throw new AgentException(String.format("Agent jar file starting with %s not in Classpath", agentjar));
 				}
 					
 				vm.detach();
@@ -174,15 +180,15 @@ public abstract class Transformer {
 	
 	
 	public static void main(String[] argv) {
-//		LazyInitAgent agent = new LazyInitAgent();
-//		agent.addEntity("Instance");
-//		Transformer.addTransformer(agent);
-//		try {
-//			Transformer.startAgent();
-//		} catch (AgentException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		LazyInitAgent agent = new LazyInitAgent();
+		agent.addEntity("awesome.persistence.entity.Instance");
+		Transformer.addTransformer(agent);
+		try {
+			Transformer.startAgent();
+		} catch (AgentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 		try {
@@ -202,7 +208,7 @@ public abstract class Transformer {
 		inst.setField(20);
 		
 		try {
-			Manager.persist(inst);
+			Manager.persist(inst, false);
 		} catch (NotAEntity e) {
 			e.printStackTrace();
 		} catch (SQLException e) {

@@ -1,5 +1,11 @@
 package awesome.persistence.manager;
 
+/**
+ * 
+ * Exception type returned when the manager encounters an object that is not
+ * an entity.
+ *
+ */
 public class NotAEntity extends Exception {
 
 	public NotAEntity(String msg) {

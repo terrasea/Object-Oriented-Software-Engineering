@@ -3,6 +3,11 @@ package awesome.persistence.test;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
+/**
+ * 
+ * Test object use in the TestManager class
+ *
+ */
 public class Tea {
 	@ID
 	@Basic

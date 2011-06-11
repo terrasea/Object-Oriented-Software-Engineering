@@ -3,21 +3,12 @@ package awesome.persistence.test;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
-public class Coffee {
-//	@ID
-//	private int awesomeId;
-//	
-//	
-//	public void setAwesomeId(Integer id) {
-//		this.awesomeId = id;
-//	}
-//	
-//	
-//	public int getAwesomeId() {
-//		return awesomeId;
-//	}
-	
-	
+/**
+ * 
+ * Test object use in the TestManager class
+ *
+ */
+public class Coffee {	
 	@ID
 	private String name;
 	

@@ -71,7 +71,19 @@ public class Manager {
 	}
 
 	
-	
+	/**
+	 * 
+	 * @param <E>
+	 * @param f
+	 * @param entity
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 * @throws SecurityException
+	 * @throws NoSuchFieldException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
 	@SuppressWarnings("unchecked")
 	private static <E> void handleOneToMany(Field f, E entity) throws NotAEntity, SQLException, EntityException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 		f.setAccessible(true);

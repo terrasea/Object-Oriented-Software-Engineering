@@ -3,6 +3,11 @@ package awesome.persistence.test;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
+/**
+ * 
+ * Class used to test the storing of all java primitive types in the database/
+ *
+ */
 public class Primatives {
 	@Basic
 	private String pString;

@@ -21,7 +21,8 @@ import awesome.persistence.manager.PropertiesException;
 
 /**
  * 
- * Test class for Manager
+ * Test class for Manager, contains assortment of methods that tests the functionaloty
+ * of the Manager class.
  *
  */
 public class TestManager {
@@ -89,6 +90,7 @@ public class TestManager {
 	
 	/**
 	 * Tests the setting of the properties with an invalid properties file
+	 * 
 	 * @throws IOException Should not be thrown
 	 * @throws PropertiesException Should be thrown
 	 */
@@ -99,7 +101,8 @@ public class TestManager {
 	
 	/**
 	 * Tests the persisting and retrieving of the primitive object from the database
-	 * @throws Exception
+	 * 
+	 * @throws Exception 
 	 */
 	@Test
 	public void testPersist() throws Exception{
@@ -121,8 +124,6 @@ public class TestManager {
 		
 		Primatives res = (Primatives) results.get(0);
 		assertTrue(res.getPInt() == 100);
-		//assertTrue(res.getPString().equals("HELLO WORLD"));
-
 	}
 	
 	/**
@@ -221,6 +222,7 @@ public class TestManager {
 	
 	/**
 	 * Test involved with the coffee object.
+	 * 
 	 * @throws NotAEntity
 	 * @throws SQLException
 	 * @throws EntityException
@@ -249,13 +251,14 @@ public class TestManager {
 	
 	/**
 	 * Tests involved with the tea object
+	 * 
 	 * @throws NotAEntity
 	 * @throws SQLException
 	 * @throws EntityException
 	 * @throws AQLException
 	 */
 	@Test
-	public void teaTest() throws NotAEntity, SQLException, EntityException, AQLException{
+	public void teaTest() throws Exception{
 		Tea t = new Tea();
 		
 		t.setAwesomeId(100);
@@ -396,5 +399,12 @@ public class TestManager {
 		assertTrue(d2.equals(d));
 		
 		assertTrue(Manager.deleteFromDb(dobj));
+	}
+	
+	@Test
+	public void oneToManyTest() throws IOException, PropertiesException{
+		Manager.setUpManager(propertiesPath);
+		
+		
 	}
 }

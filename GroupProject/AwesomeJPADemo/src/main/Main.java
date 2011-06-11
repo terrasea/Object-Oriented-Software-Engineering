@@ -11,7 +11,6 @@ import entity.Paper;
 import entity.Student;
 
 import awesome.persistence.agent.AgentException;
-import awesome.persistence.agent.LazyInitAgent;
 import awesome.persistence.agent.Transformer;
 import awesome.persistence.manager.AQLException;
 import awesome.persistence.manager.EntityException;
@@ -38,7 +37,16 @@ public class Main {
 	 * @throws InterruptedException 
 	 * @throws AgentException 
 	 */
+<<<<<<< HEAD
 	public static void main(String[] args) throws InterruptedException {
+=======
+	public static void main(String[] args) {
+//		LazyInitAgent agent = new LazyInitAgent();
+//		agent.addEntity("Coffee");
+//		agent.addEntity("Tea");
+//		agent.addEntity("Test");
+//		Transformer.addTransformer(agent);
+>>>>>>> 30d7af1... got rid of unwanted imports
 		try {
 			Manager.setUpManager(propertiesPath);
 //			int count = 0;

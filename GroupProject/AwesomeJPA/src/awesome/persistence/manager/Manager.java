@@ -54,6 +54,7 @@ public class Manager {
 			throw new PropertiesException("Invalid properties file provided.");
 		}
 		
+<<<<<<< HEAD
 //		LazyInitAgent clt = new LazyInitAgent();
 		String[] entities = properties.getProperty("entities").split(";");
 		for(String entity: entities) {
@@ -69,6 +70,13 @@ public class Manager {
 			} catch (EntityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+=======
+		try {
+			LazyInitAgent clt = new LazyInitAgent();
+			String[] entities = properties.getProperty("entities").split(";");
+			for(String entity: entities) {
+				clt.addEntity(entity);
+>>>>>>> 30d7af1... got rid of unwanted imports
 			}
 			
 //			clt.addEntity(entity);

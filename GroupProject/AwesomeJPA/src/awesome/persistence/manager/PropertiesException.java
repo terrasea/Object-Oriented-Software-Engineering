@@ -15,14 +15,14 @@ public class PropertiesException extends Exception {
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * 
+	 * Constructor
 	 */
 	public PropertiesException() {
 		super();
 	}
 	
 	/**
-	 * 
+	 * Constructor
 	 * @param msg The exception message
 	 */
 	public PropertiesException(String msg) {

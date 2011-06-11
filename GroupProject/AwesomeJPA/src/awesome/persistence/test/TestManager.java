@@ -21,7 +21,8 @@ import awesome.persistence.manager.PropertiesException;
 
 /**
  * 
- * Test class for Manager
+ * Test class for Manager, contains assortment of methods that tests the functionaloty
+ * of the Manager class.
  *
  */
 public class TestManager {
@@ -89,6 +90,7 @@ public class TestManager {
 	
 	/**
 	 * Tests the setting of the properties with an invalid properties file
+	 * 
 	 * @throws IOException Should not be thrown
 	 * @throws PropertiesException Should be thrown
 	 */
@@ -99,7 +101,8 @@ public class TestManager {
 	
 	/**
 	 * Tests the persisting and retrieving of the primitive object from the database
-	 * @throws Exception
+	 * 
+	 * @throws Exception 
 	 */
 	@Test
 	public void testPersist() throws Exception{
@@ -121,8 +124,6 @@ public class TestManager {
 		
 		Primatives res = (Primatives) results.get(0);
 		assertTrue(res.getPInt() == 100);
-		//assertTrue(res.getPString().equals("HELLO WORLD"));
-
 	}
 	
 	/**
@@ -134,7 +135,7 @@ public class TestManager {
 	 * @throws EntityException
 	 */
 	@Test
-	public void testGetField() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
+	public void testGetField() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
@@ -199,7 +200,7 @@ public class TestManager {
 	 * @throws EntityException
 	 */
 	@Test
-	public void testComplexObject() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
+	public void testComplexObject() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
@@ -221,6 +222,7 @@ public class TestManager {
 	
 	/**
 	 * Test involved with the coffee object.
+	 * 
 	 * @throws NotAEntity
 	 * @throws SQLException
 	 * @throws EntityException
@@ -229,7 +231,7 @@ public class TestManager {
 	 * @throws AQLException
 	 */
 	@Test
-	public void coffeeTest() throws NotAEntity, SQLException, EntityException, IOException, PropertiesException, AQLException{
+	public void coffeeTest() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Coffee c = new Coffee();
 		c.setMilk(true);
@@ -249,13 +251,14 @@ public class TestManager {
 	
 	/**
 	 * Tests involved with the tea object
+	 * 
 	 * @throws NotAEntity
 	 * @throws SQLException
 	 * @throws EntityException
 	 * @throws AQLException
 	 */
 	@Test
-	public void teaTest() throws NotAEntity, SQLException, EntityException, AQLException{
+	public void teaTest() throws Exception{
 		Tea t = new Tea();
 		
 		t.setAwesomeId(100);
@@ -282,7 +285,7 @@ public class TestManager {
 	 * @throws AQLException
 	 */
 	@Test
-	public void updateTest() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException, AQLException{
+	public void updateTest() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
@@ -315,7 +318,7 @@ public class TestManager {
 	 * @throws PropertiesException
 	 */
 	@Test
-	public void whereTest() throws NotAEntity, SQLException, EntityException, AQLException, IOException, PropertiesException{
+	public void whereTest() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
@@ -375,7 +378,7 @@ public class TestManager {
 	 * @throws AQLException
 	 */
 	@Test
-	public void dateTest() throws NotAEntity, SQLException, EntityException, IOException, PropertiesException, AQLException{
+	public void dateTest() throws Exception{
 		Manager.setProperties(propertiesPath);
 		Date d = new Date();
 		
@@ -401,5 +404,7 @@ public class TestManager {
 	@Test
 	public void oneToManyTest() throws IOException, PropertiesException{
 		Manager.setProperties(propertiesPath);
+		
+		
 	}
 }

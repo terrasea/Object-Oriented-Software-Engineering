@@ -3,6 +3,12 @@ package awesome.persistence.test;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
+/**
+ * 
+ * Test object use in the TestManager class, tests one to one relationships between
+ * entities, Complex has a relationship with a Primative entity.
+ *
+ */
 public class Complex {
 	@Basic
 	private int myInt;

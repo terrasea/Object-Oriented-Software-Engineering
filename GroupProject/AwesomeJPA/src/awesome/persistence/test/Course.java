@@ -3,6 +3,11 @@ package awesome.persistence.test;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
+/**
+ * 
+ * Test object use in the TestManager class, used for one to many relationships.
+ *
+ */
 public class Course {
 
 	@ID

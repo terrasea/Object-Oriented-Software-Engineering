@@ -5,6 +5,11 @@ import java.util.List;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 
+/**
+ * 
+ * Test object use in the TestManager class, used for one to many relationships.
+ *
+ */
 public class Person {
 
 	@ID

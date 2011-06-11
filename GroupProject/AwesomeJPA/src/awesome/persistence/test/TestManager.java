@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +14,6 @@ import org.junit.Test;
 
 
 import awesome.persistence.manager.AQLException;
-import awesome.persistence.manager.DateFormatter;
 import awesome.persistence.manager.EntityException;
 import awesome.persistence.manager.Manager;
 import awesome.persistence.manager.NotAEntity;
@@ -221,6 +219,15 @@ public class TestManager {
 		assertTrue(prims.getPInt() == 100);
 	}
 	
+	/**
+	 * Test involved with the coffee object.
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 * @throws IOException
+	 * @throws PropertiesException
+	 * @throws AQLException
+	 */
 	@Test
 	public void coffeeTest() throws NotAEntity, SQLException, EntityException, IOException, PropertiesException, AQLException{
 		Manager.setProperties(propertiesPath);
@@ -240,6 +247,13 @@ public class TestManager {
 		assertTrue(res.getName().equals("Strong"));
 	}
 	
+	/**
+	 * Tests involved with the tea object
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 * @throws AQLException
+	 */
 	@Test
 	public void teaTest() throws NotAEntity, SQLException, EntityException, AQLException{
 		Tea t = new Tea();
@@ -257,6 +271,16 @@ public class TestManager {
 		assertTrue(res.getAwesomeId() == 100);
 	}
 	
+	/**
+	 * Tests the updating of objects in the database.
+	 * 
+	 * @throws IOException
+	 * @throws PropertiesException
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 * @throws AQLException
+	 */
 	@Test
 	public void updateTest() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException, AQLException{
 		Manager.setProperties(propertiesPath);
@@ -280,6 +304,16 @@ public class TestManager {
 	}
 	
 
+	/**
+	 * Tests the use of where clauses in the AQL
+	 * 
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 * @throws AQLException
+	 * @throws IOException
+	 * @throws PropertiesException
+	 */
 	@Test
 	public void whereTest() throws NotAEntity, SQLException, EntityException, AQLException, IOException, PropertiesException{
 		Manager.setProperties(propertiesPath);
@@ -330,15 +364,37 @@ public class TestManager {
 		}
 	}
 	
+	/**
+	 * Test for the data field.
+	 * 
+	 * @throws NotAEntity
+	 * @throws SQLException
+	 * @throws EntityException
+	 * @throws IOException
+	 * @throws PropertiesException
+	 * @throws AQLException
+	 */
 	@Test
-	public void dateTest() throws ParseException{
+	public void dateTest() throws NotAEntity, SQLException, EntityException, IOException, PropertiesException, AQLException{
+		Manager.setProperties(propertiesPath);
 		Date d = new Date();
-
-		String formattedD = DateFormatter.dateToString(d);
-		System.out.println(formattedD);
 		
-		Date d2 = DateFormatter.dateFromString(formattedD);
+		DateObject dobj = new DateObject();
 		
-		assertTrue(d.equals(d2));
+		dobj.setDate(d);
+		dobj.setSomeInteger(100000);
+		
+		Manager.persist(dobj);
+		
+		List<Object> results = Manager.queryDB("FETCH " + dobj.getClass().getCanonicalName());
+		
+		assertTrue(results.size() == 1);
+		
+		DateObject dobjResult = (DateObject)results.get(0);
+		
+		Date d2 = dobjResult.getDate();
+		assertTrue(d2.equals(d));
+		
+		assertTrue(Manager.deleteFromDb(dobj));
 	}
 }

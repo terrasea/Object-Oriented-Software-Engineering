@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -261,6 +262,10 @@ public class Manager {
 				if (type.equals("java.lang.String")) {
 					String s = (String) f.get(entity);
 					valsList.add("'" + s + "'");
+				}else if(type.equals("java.util.Date")){
+					Date d = (Date) f.get(entity);
+					valsList.add(Long.toString(d.getTime()));
+					
 					
 				} else if (type.equals("int")) {
 					Integer i = (Integer) f.get(entity);
@@ -536,6 +541,9 @@ public class Manager {
 			// Switch for field type, setting val to correct type
 			if(type.equals("java.lang.String")){
 				val = res.getString(primaryKey.getName());
+			}else if(type.equals("java.util.Date")){
+				Long l = res.getLong(primaryKey.getName());
+				val = new Date(l);
 			}else if(type.equals("int")){
 				val = res.getInt(primaryKey.getName());
 			}else if(type.equals("boolean")){
@@ -624,6 +632,9 @@ public class Manager {
 		// add brackets for string types
 		if(type.equals("java.lang.String") || type.equals("char")){
 			primaryKeyString = "\"" + primaryKey +  "\"";
+		}else if(type.equals("java.util.Date")){
+			Date d = (Date)primaryKey;
+			primaryKeyString = Long.toString(d.getTime());
 		}else{
 			primaryKeyString = primaryKey.toString();
 		}
@@ -820,8 +831,8 @@ public class Manager {
 
 		primaryKey.setAccessible(true);
 		
+		// Get value for the primary key field
 		Object val = null;
-
 		try {
 			val = primaryKey.get(obj);
 		} catch (Exception e) {
@@ -829,8 +840,24 @@ public class Manager {
 			throw new EntityException("Primary key for obj could not be accessed.");
 		}
 		
+		// Get type of field
+		String type = primaryKey.getType().getCanonicalName();
+		
+		// Format primary key for database use
+		String primaryKeyString = null;
+		
+		// add brackets for string types
+		if(type.equals("java.lang.String") || type.equals("char")){
+			primaryKeyString = "\"" + val +  "\"";
+		}else if(type.equals("java.util.Date")){
+			Date d = (Date)val;
+			primaryKeyString = Long.toString(d.getTime());
+		}else{
+			primaryKeyString = val.toString();
+		}
+		
 		// Build the SQL string
-		String sql = "DELETE FROM " + className.replace(".","_") + " WHERE " + primaryKey.getName()+ " = " + val.toString();
+		String sql = "DELETE FROM " + className.replace(".","_") + " WHERE " + primaryKey.getName()+ " = " + primaryKeyString;
 		System.out.println(sql);
 		
 		// Get connection to the database
@@ -1037,6 +1064,8 @@ public class Manager {
 	private static String convertToSqlType(String javaType) throws Exception {
 		if(javaType.equals("java.lang.String")){
 			return " VARCHAR(254)";
+		}else if(javaType.equals("java.util.Date")){
+			return " BIGINT";
 		} else if (javaType.equals("int")) {
 			return " INT";
 		} else if (javaType.equals("boolean")) {

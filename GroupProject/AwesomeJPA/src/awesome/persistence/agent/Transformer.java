@@ -38,6 +38,7 @@ public abstract class Transformer {
 	public static void premain(String agentArgs, Instrumentation inst) {
 		if (!agentRunning) {
 			agentRunning = true;
+			
 			for (ClassFileTransformer trans : transformers) {
 				inst.addTransformer(trans);
 			}
@@ -173,19 +174,20 @@ public abstract class Transformer {
 	
 	
 	public static void main(String[] argv) {
-		LazyInitAgent agent = new LazyInitAgent();
-		agent.addEntity("Instance");
-		Transformer.addTransformer(agent);
-		try {
-			Transformer.startAgent();
-		} catch (AgentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		LazyInitAgent agent = new LazyInitAgent();
+//		agent.addEntity("Instance");
+//		Transformer.addTransformer(agent);
+//		try {
+//			Transformer.startAgent();
+//		} catch (AgentException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
-		System.out.println("Agent running: " + Transformer.agentRunning());
+		
 		try {
-			Manager.setProperties("lib/awesome.properties");
+			Manager.setUpManager("lib/awesome.properties");
+			System.out.println("Agent running: " + Transformer.agentRunning());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

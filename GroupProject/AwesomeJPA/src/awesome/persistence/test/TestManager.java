@@ -73,7 +73,7 @@ public class TestManager {
 	@Test
 	public void testSetPropertiesValid() throws IOException, PropertiesException{
 		// Attempt to set properties, fail if any expception thrown
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 	}
 	
 	/**
@@ -83,7 +83,7 @@ public class TestManager {
 	 */
 	@Test(expected=IOException.class)
 	public void testSetPropertiesNoFile() throws IOException, PropertiesException{
-		Manager.setProperties("awesome.propertiesNOFILE");
+		Manager.setUpManager("awesome.propertiesNOFILE");
 		
 	}
 	
@@ -94,7 +94,7 @@ public class TestManager {
 	 */
 	@Test(expected=PropertiesException.class)
 	public void testSetPropertiesEmptyFile()throws IOException, PropertiesException{
-		Manager.setProperties(invalidPropertiesPath);
+		Manager.setUpManager(invalidPropertiesPath);
 	}
 	
 	/**
@@ -104,7 +104,7 @@ public class TestManager {
 	@Test
 	public void testPersist() throws Exception{
 		System.out.println("TP");
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
 		p.setPChar('c');
@@ -135,7 +135,7 @@ public class TestManager {
 	 */
 	@Test
 	public void testGetField() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
 		p.setPChar('c');
@@ -176,7 +176,7 @@ public class TestManager {
 	 */
 	@Test
 	public void testDelete() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
 		p.setPChar('c');
@@ -200,7 +200,7 @@ public class TestManager {
 	 */
 	@Test
 	public void testComplexObject() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException{
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
 		p.setPChar('c');
@@ -230,7 +230,7 @@ public class TestManager {
 	 */
 	@Test
 	public void coffeeTest() throws NotAEntity, SQLException, EntityException, IOException, PropertiesException, AQLException{
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Coffee c = new Coffee();
 		c.setMilk(true);
 		c.setStrength(100);
@@ -283,7 +283,7 @@ public class TestManager {
 	 */
 	@Test
 	public void updateTest() throws IOException, PropertiesException, NotAEntity, SQLException, EntityException, AQLException{
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
 		p.setPChar('c');
@@ -316,7 +316,7 @@ public class TestManager {
 	 */
 	@Test
 	public void whereTest() throws NotAEntity, SQLException, EntityException, AQLException, IOException, PropertiesException{
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
 		p.setPChar('c');
@@ -376,7 +376,7 @@ public class TestManager {
 	 */
 	@Test
 	public void dateTest() throws NotAEntity, SQLException, EntityException, IOException, PropertiesException, AQLException{
-		Manager.setProperties(propertiesPath);
+		Manager.setUpManager(propertiesPath);
 		Date d = new Date();
 		
 		DateObject dobj = new DateObject();

@@ -39,7 +39,7 @@ public class Manager {
 	 * @throws IOException
 	 *             Thrown if the awesome.properties file cannot be loaded
 	 */
-	public static void setProperties(String propertiesPath) throws IOException,
+	public static void setUpManager(String propertiesPath) throws IOException,
 			PropertiesException {
 		// Initialize properties
 		properties = new Properties();

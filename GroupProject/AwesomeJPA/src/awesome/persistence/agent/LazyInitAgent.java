@@ -9,7 +9,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 
-
+import awesome.persistence.agent.LazyInitAdaptor;
 
 public class LazyInitAgent implements ClassFileTransformer {
 
@@ -28,11 +28,12 @@ public class LazyInitAgent implements ClassFileTransformer {
 		
 		ClassReader cr = new ClassReader(b);
 		ClassWriter cw = new ClassWriter(cr, 0);
-		String[] tmp = className.split("/");
-		if( entities.contains(tmp[tmp.length-1]) ) {
+		String klassName = className.replace("/", ".");
+		if( entities.contains(klassName)) {
 			cr.accept(new LazyInitAdaptor(cw), 0);
 			return cw.toByteArray();
 		}
+		
 		return null;
 	}
 

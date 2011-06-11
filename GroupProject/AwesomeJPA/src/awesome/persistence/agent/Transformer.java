@@ -202,25 +202,13 @@ public abstract class Transformer {
 		try {
 			Manager.persist(inst);
 		} catch (NotAEntity e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (EntityException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		//System.out.println(inst.field);
-		System.out.println("Getter: " + inst.getField());
-		//System.out.println("Getter: " + inst.getField());
-//		try {
-//			FieldFetcher.get(inst, "field");
-//		}catch(Exception e) {
-//			e.printStackTrace();
-//		}
-		//inst.printAttributes();
 		
 	}
 }

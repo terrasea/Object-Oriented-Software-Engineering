@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import awesome.persistence.agent.AgentException;
-import awesome.persistence.agent.LazyInitAgent;
 import awesome.persistence.agent.Transformer;
 import awesome.persistence.manager.AQLException;
 import awesome.persistence.manager.EntityException;
@@ -24,11 +23,11 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		LazyInitAgent agent = new LazyInitAgent();
-		agent.addEntity("Coffee");
-		agent.addEntity("Tea");
-		agent.addEntity("Test");
-		Transformer.addTransformer(agent);
+//		LazyInitAgent agent = new LazyInitAgent();
+//		agent.addEntity("Coffee");
+//		agent.addEntity("Tea");
+//		agent.addEntity("Test");
+//		Transformer.addTransformer(agent);
 		try {
 			Transformer.startAgent();
 		} catch (AgentException e) {

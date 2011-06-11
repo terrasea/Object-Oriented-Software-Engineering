@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -13,6 +15,7 @@ import org.junit.Test;
 
 
 import awesome.persistence.manager.AQLException;
+import awesome.persistence.manager.DateFormatter;
 import awesome.persistence.manager.EntityException;
 import awesome.persistence.manager.Manager;
 import awesome.persistence.manager.NotAEntity;
@@ -278,7 +281,8 @@ public class TestManager {
 	
 
 	@Test
-	public void whereTest() throws NotAEntity, SQLException, EntityException, AQLException{
+	public void whereTest() throws NotAEntity, SQLException, EntityException, AQLException, IOException, PropertiesException{
+		Manager.setProperties(propertiesPath);
 		Primatives p = new Primatives();
 		p.setPBool(true);
 		p.setPChar('c');
@@ -324,5 +328,17 @@ public class TestManager {
 			assertTrue(x == 3);
 			assertTrue(y == 2);
 		}
+	}
+	
+	@Test
+	public void dateTest() throws ParseException{
+		Date d = new Date();
+
+		String formattedD = DateFormatter.dateToString(d);
+		System.out.println(formattedD);
+		
+		Date d2 = DateFormatter.dateFromString(formattedD);
+		
+		assertTrue(d.equals(d2));
 	}
 }

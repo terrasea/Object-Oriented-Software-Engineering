@@ -28,8 +28,9 @@ public class LazyInitAgent implements ClassFileTransformer {
 		
 		ClassReader cr = new ClassReader(b);
 		ClassWriter cw = new ClassWriter(cr, 0);
-		String[] tmp = className.split("/");
-		if( entities.contains(tmp[tmp.length-1]) ) {
+		String tmp = className.replace("/", ".");
+		if( entities.contains(tmp) ) {
+			System.out.println("Transforming: " + tmp);
 			cr.accept(new LazyInitAdaptor(cw), 0);
 			return cw.toByteArray();
 		}

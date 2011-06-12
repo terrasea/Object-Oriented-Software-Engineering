@@ -1,6 +1,5 @@
 package main;
 
-import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.sql.SQLException;
 import java.util.Date;

@@ -27,7 +27,7 @@ import awesome.persistence.annotations.OneToMany;
  * Manager class
  * 
  */
-public class Manager {
+public abstract class Manager {
 
 	// Properties extracted from the awesome.properties file
 	private static Properties properties;
@@ -234,10 +234,6 @@ public class Manager {
 		}
 	}
 	
-	public static void persist(Object entity) throws NotAEntity, SQLException, EntityException {
-		Manager.persist(entity, false);
-	}
-	
 	
 	/**
 	 * Sends an object to the database
@@ -246,7 +242,13 @@ public class Manager {
 	 *            The entity to store in the database
 	 * @throws EntityException
 	 */
-	public static void persist(Object entity, boolean cyclic) throws NotAEntity, SQLException, EntityException {
+	public static void persist(Object entity) throws NotAEntity, SQLException, EntityException {
+		Manager.persist(entity, false);
+	}
+	
+	
+	
+	private static void persist(Object entity, boolean cyclic) throws NotAEntity, SQLException, EntityException {
 		// Get the class of the object
 		Class<? extends Object> c = entity.getClass();
 		// Test if the provided class is valid

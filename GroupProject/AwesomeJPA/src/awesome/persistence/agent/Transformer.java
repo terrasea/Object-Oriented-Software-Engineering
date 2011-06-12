@@ -9,17 +9,10 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import sun.management.VMManagement;
-import awesome.persistence.entity.Instance;
-import awesome.persistence.manager.EntityException;
-import awesome.persistence.manager.Manager;
-import awesome.persistence.manager.NotAEntity;
-import awesome.persistence.manager.PropertiesException;
-
 
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
@@ -93,6 +86,7 @@ public abstract class Transformer {
 			jvmField.setAccessible(true);
 
 			VMManagement management = (VMManagement) jvmField.get(mxbean);
+			
 			//System.out.println("management VmId: " + management.getVmId());
 			Method method = management.getClass().getDeclaredMethod(
 					"getProcessId");
@@ -179,28 +173,5 @@ public abstract class Transformer {
 	}
 	
 	
-	public static void main(String[] argv) {
-		try {
-			Manager.setUpManager("lib/awesome.properties");
-			System.out.println("Agent running: " + Transformer.agentRunning());
-		} catch (PropertiesException e) {
-			e.printStackTrace();
-		}
-		
-		Instance inst = new Instance();
-		
-		inst.setAwesomeId(1);
-		inst.setField(20);
-		
-		try {
-			Manager.persist(inst, false);
-		} catch (NotAEntity e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (EntityException e) {
-			e.printStackTrace();
-		}
-		
-	}
+	
 }

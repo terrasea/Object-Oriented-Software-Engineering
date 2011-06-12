@@ -14,8 +14,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Basic {
-	// How to treat the field at load time
-	FetchType fetch() default FetchType.LAZY;
-	// ???????
-	boolean optional() default true;
 }

@@ -39,6 +39,7 @@ public abstract class Transformer {
 	public static void premain(String agentArgs, Instrumentation inst) {
 		if (!agentRunning) {
 			agentRunning = true;
+			
 			for (ClassFileTransformer trans : transformers) {
 				inst.addTransformer(trans);
 			}
@@ -176,19 +177,12 @@ public abstract class Transformer {
 	
 	
 	public static void main(String[] argv) {
-		LazyInitAgent agent = new LazyInitAgent();
-		agent.addEntity("Instance");
-		Transformer.addTransformer(agent);
-		try {
-			Transformer.startAgent();
-		} catch (AgentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		
 		
-		System.out.println("Agent running: " + Transformer.agentRunning());
+		
 		try {
 			Manager.setUpManager("lib/awesome.properties");
+			System.out.println("Agent running: " + Transformer.agentRunning());
 		} catch (PropertiesException e) {
 			e.printStackTrace();
 		}
@@ -201,25 +195,12 @@ public abstract class Transformer {
 		try {
 			Manager.persist(inst);
 		} catch (NotAEntity e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		
-		} catch (EntityException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} catch (EntityException e) {
+			e.printStackTrace();
 		}
-		
-		//System.out.println(inst.field);
-		System.out.println("Getter: " + inst.getField());
-		//System.out.println("Getter: " + inst.getField());
-//		try {
-//			FieldFetcher.get(inst, "field");
-//		}catch(Exception e) {
-//			e.printStackTrace();
-//		}
-		//inst.printAttributes();
 		
 	}
 }

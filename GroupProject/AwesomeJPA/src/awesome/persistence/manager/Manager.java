@@ -16,7 +16,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-
+import awesome.persistence.agent.AgentException;
+import awesome.persistence.agent.LazyInitAgent;
+import awesome.persistence.agent.Transformer;
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 import awesome.persistence.annotations.ManyToOne;
@@ -100,6 +102,14 @@ public class Manager {
 		}
 		
 		
+		
+		try {
+			
+			Transformer.startAgent();
+		} catch (AgentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	

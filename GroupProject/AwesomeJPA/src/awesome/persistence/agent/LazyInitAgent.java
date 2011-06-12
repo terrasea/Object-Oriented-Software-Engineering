@@ -9,7 +9,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 
-
+import awesome.persistence.agent.LazyInitAdaptor;
 
 public class LazyInitAgent implements ClassFileTransformer {
 
@@ -34,6 +34,7 @@ public class LazyInitAgent implements ClassFileTransformer {
 			cr.accept(new LazyInitAdaptor(cw), 0);
 			return cw.toByteArray();
 		}
+		
 		return null;
 	}
 

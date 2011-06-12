@@ -125,14 +125,11 @@ public abstract class Transformer {
 
 	private static final String CLASS_PATH = System.getProperty("java.class.path");
 
-	private static String agentjar = "AwesomeJPA.jar";
+	private static final String INSTR_JAR_NAME = "AwesomeJPA.jar";
 
 	private static final String OS_NAME = System.getProperty("os.name");
 
 	
-	public static void setAgentJar(String jarname) {
-		agentjar = jarname;
-	}
 	
 	
 	public static void startAgent() throws AgentException {
@@ -156,7 +153,7 @@ public abstract class Transformer {
 					vm.loadAgent(agentPath);
 					
 				}else {
-					throw new AgentException(String.format("Agent jar file starting with %s not in Classpath", agentjar));
+					throw new AgentException(String.format("Agent jar file starting with %s not in Classpath", INSTR_JAR_NAME));
 				}
 					
 				vm.detach();

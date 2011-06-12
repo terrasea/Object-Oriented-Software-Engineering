@@ -102,7 +102,7 @@ public class Manager {
 				e.printStackTrace();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
 			} catch (EntityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

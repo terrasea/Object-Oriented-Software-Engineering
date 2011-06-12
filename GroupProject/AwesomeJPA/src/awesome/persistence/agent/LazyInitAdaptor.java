@@ -27,7 +27,6 @@ public class LazyInitAdaptor extends ClassAdapter {
 		cv.visit(version, access, name, signature, superName, interfaces);
 		owner = name;
 		isEntity = entities.contains(name.replace('/', '.'));//Manager.isEntity(name);
-		System.out.println("Entity? " + name + "=" + isEntity);
 	}
 
 	@Override
@@ -49,8 +48,6 @@ public class LazyInitAdaptor extends ClassAdapter {
 			if (isEntity && mv != null && name.startsWith("get")
 					 && !name.endsWith("AwesomeId")) {
 				mv = new LazyInitGetterAdaptor(mv, owner, name);
-			} else {
-				//System.out.println("Not get or a entity: " + name);
 			}
 		}
 		return mv;

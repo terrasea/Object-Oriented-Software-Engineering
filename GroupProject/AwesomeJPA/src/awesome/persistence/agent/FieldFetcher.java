@@ -10,7 +10,6 @@ import awesome.persistence.manager.Manager;
 public class FieldFetcher {
 	@SuppressWarnings("unchecked")
 	public static <C> void set(C klass, String field) throws Exception {
-		System.out.println("Getting field " + field + " for entity " + klass);
 		Field fieldID = klass.getClass().getDeclaredField(field);
 		String table = klass.getClass().getName();//.replace('$', '_').replace('.','_');
 		//String table = tmpArray[tmpArray.length - 1];
@@ -35,16 +34,12 @@ public class FieldFetcher {
 		
 		fieldID.setAccessible(true);
 		if(value != null) {
-			//System.out.println("FieldFetcher: Is collection?: " + (value instanceof Collection));
 			if(value instanceof Collection) {
 				Collection<Object> c = ((Collection<Object>)fieldID.get(klass));
 				c.addAll((Collection<Object>)value);
 			} else {
 				fieldID.set(klass, value);
 			}
-		} else {
-//		System.out.println("FieldFetcher: " + fieldID.get(klass) + ", "
-//				+ fieldID.getType() + ", " + value);
 		}
 	}
 }

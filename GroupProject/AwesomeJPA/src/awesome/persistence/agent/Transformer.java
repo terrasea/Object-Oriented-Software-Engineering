@@ -194,10 +194,10 @@ public abstract class Transformer {
 		try {
 			Manager.setUpManager("lib/awesome.properties");
 			System.out.println("Agent running: " + Transformer.agentRunning());
-		} catch (IOException e) {
+		} catch (PropertiesException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (PropertiesException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

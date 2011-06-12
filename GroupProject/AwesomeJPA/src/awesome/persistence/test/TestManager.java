@@ -1,6 +1,6 @@
 package awesome.persistence.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,12 +12,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-
 import awesome.persistence.manager.AQLException;
 import awesome.persistence.manager.EntityException;
 import awesome.persistence.manager.Manager;
 import awesome.persistence.manager.NotAEntity;
 import awesome.persistence.manager.PropertiesException;
+
+
 
 /**
  * 
@@ -68,11 +69,10 @@ public class TestManager {
 	
 	/**
 	 * Tests the setting of the properties file with a valid file.
-	 * @throws PropertiesException If the properties are malformed
-	 * @throws IOException If the file could noawesome/persistence/test/t be accessed
+	 * @throws Exception 
 	 */
 	@Test
-	public void testSetPropertiesValid() throws IOException, PropertiesException{
+	public void testSetPropertiesValid() throws Exception{
 		// Attempt to set properties, fail if any expception thrown
 		Manager.setUpManager(propertiesPath);
 	}
@@ -90,12 +90,11 @@ public class TestManager {
 	
 	/**
 	 * Tests the setting of the properties with an invalid properties file
-	 * 
-	 * @throws IOException Should not be thrown
-	 * @throws PropertiesException Should be thrown
+	 * @throws Exception 
 	 */
+	
 	@Test(expected=PropertiesException.class)
-	public void testSetPropertiesEmptyFile()throws IOException, PropertiesException{
+	public void testSetPropertiesEmptyFile()throws PropertiesException{
 		Manager.setUpManager(invalidPropertiesPath);
 	}
 	

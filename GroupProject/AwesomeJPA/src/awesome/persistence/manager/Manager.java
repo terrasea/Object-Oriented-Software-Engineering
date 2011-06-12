@@ -1,6 +1,7 @@
 package awesome.persistence.manager;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -15,9 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import awesome.persistence.agent.AgentException;
-import awesome.persistence.agent.LazyInitAgent;
-import awesome.persistence.agent.Transformer;
+
 import awesome.persistence.annotations.Basic;
 import awesome.persistence.annotations.ID;
 import awesome.persistence.annotations.ManyToOne;
@@ -39,13 +38,20 @@ public class Manager {
 	 * @throws IOException
 	 *             Thrown if the awesome.properties file cannot be loaded
 	 */
-	public static void setUpManager(String propertiesPath) throws IOException,
-			PropertiesException {
+	public static void setUpManager(String propertiesPath) throws PropertiesException {
 		// Initialize properties
 		properties = new Properties();
 
 		// Load properties from file
-		properties.load(new FileInputStream(propertiesPath));
+		try {
+			properties.load(new FileInputStream(propertiesPath));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		// Check the required properties are provided
 		if (!properties.containsKey("entities")
@@ -53,10 +59,29 @@ public class Manager {
 			// Invalid properties file, throw exception
 			throw new PropertiesException("Invalid properties file provided.");
 		}
-		
-<<<<<<< HEAD
-//		LazyInitAgent clt = new LazyInitAgent();
 		String[] entities = properties.getProperty("entities").split(";");
+		
+		if(properties.containsKey("agentjar")) {
+			String jarname = properties.getProperty("agentjar");
+			awesome.persistence.agent.Transformer.setAgentJar(jarname);
+		}
+		
+		awesome.persistence.agent.LazyInitAgent clt = new awesome.persistence.agent.LazyInitAgent();
+		for(String entity: entities) {
+			clt.addEntity(entity);
+		}
+		awesome.persistence.agent.Transformer.addTransformer(clt);
+		
+
+		
+		try {
+			
+			awesome.persistence.agent.Transformer.startAgent();
+		} catch (awesome.persistence.agent.AgentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		for(String entity: entities) {
 			try {
 				Class<?> c = Class.forName(entity);
@@ -70,31 +95,11 @@ public class Manager {
 			} catch (EntityException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-=======
-		try {
-			LazyInitAgent clt = new LazyInitAgent();
-			String[] entities = properties.getProperty("entities").split(";");
-			for(String entity: entities) {
-				clt.addEntity(entity);
->>>>>>> 30d7af1... got rid of unwanted imports
-			}
+			}			
 			
-//			clt.addEntity(entity);
-		}
-//		Transformer.addTransformer(clt);
-		
-		if(properties.containsKey("agentjar")) {
-			String jarname = properties.getProperty("agentjar");
-			Transformer.setAgentJar(jarname);
 		}
 		
-		try {
-			
-			Transformer.startAgent();
-		} catch (AgentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 	}
 
 	

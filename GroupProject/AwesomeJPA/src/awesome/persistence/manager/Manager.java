@@ -61,11 +61,6 @@ public class Manager {
 		}
 		String[] entities = properties.getProperty("entities").split(";");
 		
-		if(properties.containsKey("agentjar")) {
-			String jarname = properties.getProperty("agentjar");
-			awesome.persistence.agent.Transformer.setAgentJar(jarname);
-		}
-		
 		awesome.persistence.agent.LazyInitAgent clt = new awesome.persistence.agent.LazyInitAgent();
 		for(String entity: entities) {
 			clt.addEntity(entity);
@@ -73,6 +68,22 @@ public class Manager {
 		awesome.persistence.agent.Transformer.addTransformer(clt);
 		
 
+		
+//		
+		for(String entity: entities) {
+			try {
+				Class<?> c = Class.forName(entity);
+				Manager.createTable(c);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				//e.printStackTrace();
+			} catch (EntityException e) {
+				e.printStackTrace();
+			}			
+			
+		}
+		
 		
 		try {
 			
@@ -169,7 +180,6 @@ public class Manager {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (EntityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -592,12 +602,14 @@ public class Manager {
 			if(args[index].contains("=")) { 
 				String[] tmp = args[index].split("=");
 				if(tmp.length == 2) {
-					sql.append(" " + tmp[0] + "=" + "'" + tmp[1] + "'");
+					String cond = tmp[1].replace("'", "");
+					sql.append(" " + tmp[0] + "=" + "'" + cond + "'");
 				}
 			} else {
 				sql.append(" " + args[index] + " ");
 			}
 		}
+		
 		
 		
 		// Get database connection
@@ -767,7 +779,6 @@ public class Manager {
 			try {
 				String query = String.format("FETCH %s WHERE %s='%s'", target.getName(), targetFK, primaryKey);
 				List<Object> entities = Manager.queryDB(query);
-				
 				//ArrayList<Object> tmp = entities;
 				
 				//return list of objects as a array 
@@ -809,7 +820,7 @@ public class Manager {
 			}
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			//e1.printStackTrace();
 		}
 
 

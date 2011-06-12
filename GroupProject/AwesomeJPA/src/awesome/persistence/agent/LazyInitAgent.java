@@ -8,9 +8,6 @@ import java.util.HashSet;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-
-import awesome.persistence.agent.LazyInitAdaptor;
-
 public class LazyInitAgent implements ClassFileTransformer {
 
 	private HashSet<String> entities = new HashSet<String>();
@@ -29,16 +26,14 @@ public class LazyInitAgent implements ClassFileTransformer {
 		
 		ClassReader cr = new ClassReader(b);
 		ClassWriter cw = new ClassWriter(cr, 0);
-		//String klassName = className.replace("/", ".");
-		//if( entities.contains(klassName)) {
-		//	System.out.println("transforming class " + klassName);
+		String tmp = className.replace("/", ".");
+		if( entities.contains(tmp) ) {
+			System.out.println("Transforming: " + tmp);
 			cr.accept(new LazyInitAdaptor(cw, entities), 0);
 			return cw.toByteArray();
-		//}
+		}
 		
-		//return null;
+		return null;
 	}
-
-	
-	
 }
+	

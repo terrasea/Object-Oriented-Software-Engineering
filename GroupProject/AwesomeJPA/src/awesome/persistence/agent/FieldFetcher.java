@@ -35,6 +35,7 @@ public class FieldFetcher {
 		
 		fieldID.setAccessible(true);
 		if(value != null) {
+			//System.out.println("FieldFetcher: Is collection?: " + (value instanceof Collection));
 			if(value instanceof Collection) {
 				Collection<Object> c = ((Collection<Object>)fieldID.get(klass));
 				c.addAll((Collection<Object>)value);

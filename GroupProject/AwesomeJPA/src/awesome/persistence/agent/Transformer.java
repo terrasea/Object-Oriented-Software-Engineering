@@ -20,6 +20,7 @@ import awesome.persistence.manager.Manager;
 import awesome.persistence.manager.NotAEntity;
 import awesome.persistence.manager.PropertiesException;
 
+
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
@@ -136,14 +137,16 @@ public abstract class Transformer {
 	
 	public static void startAgent() throws AgentException {
 		if (!agentRunning) {
+			// without a agent the tranformer won't start
+			Transformer.addTransformer(new NullAgent());
+			
 			try {
 				String processId = getCurrentPID();
 				VirtualMachine vm = VirtualMachine.attach(processId);
 				String splitter = OS_NAME.equalsIgnoreCase("Windows") ? ";" : ":";
 				String agentPath = null;
 				for (String entry : CLASS_PATH.split(splitter)) {
-					System.out.println("Entry: " + entry);
-					if (entry.toLowerCase().endsWith(agentjar.toLowerCase())) {
+					if (entry.toLowerCase().endsWith(INSTR_JAR_NAME.toLowerCase())) {
 						agentPath = entry;
 						break;
 					}
@@ -180,25 +183,10 @@ public abstract class Transformer {
 	
 	
 	public static void main(String[] argv) {
-		LazyInitAgent agent = new LazyInitAgent();
-		agent.addEntity("awesome.persistence.entity.Instance");
-		Transformer.addTransformer(agent);
-		try {
-			Transformer.startAgent();
-		} catch (AgentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
 		try {
 			Manager.setUpManager("lib/awesome.properties");
 			System.out.println("Agent running: " + Transformer.agentRunning());
 		} catch (PropertiesException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -216,7 +204,6 @@ public abstract class Transformer {
 		} catch (EntityException e) {
 			e.printStackTrace();
 		}
-		
 		
 	}
 }

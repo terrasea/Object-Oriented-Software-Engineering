@@ -1,3 +1,0 @@
-MAIN-CLASS: main.Main
-PREMAIN-CLASS: main.Main
-Boot-Class-Path: lib/asm-4.0_RC1.jar
